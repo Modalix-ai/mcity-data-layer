@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+*.sql
+*.sql.gz
+*.gz
+*.db
+dump/
+files_media/
+*.png
+*.jpg
+*.pdf
