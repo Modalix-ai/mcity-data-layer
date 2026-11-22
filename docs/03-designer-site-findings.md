@@ -41,3 +41,28 @@
 ## לבדיקה בהמשך (ממתין לאישור)
 - `/wp-json/wp/v2/types` ו-`/wp-json/wp/v2/taxonomies` לשמות אמיתיים של CPTs וטקסונומיות.
 - דף מומחה אחד ודף כתבה אחד, לשדות המלאים.
+
+---
+
+## עדכון (2026-11-11): תוספים לפי רשימת ה-namespaces ב-REST
+
+מקור: הרשימה שהודבקה מ-`/wp-json/` של האתר. אין בה גרסאות, והיא מעידה על מה שמותקן ולא בהכרח על מה שבשימוש.
+
+| namespace | תוסף (לפי השם) | משמעות עבורנו |
+|---|---|---|
+| `yoast/v1` | Yoast SEO | תוסף ה-SEO. עונה על שאלה 16, אבל לא על canonical דינמי לפי שדה |
+| `redirection/v1` | Redirection | ניהול הפניות 301. רלוונטי להגירה |
+| `burst/v1` | נראה Burst Statistics | אנליטיקס פנימי. רלוונטי למדידת צפיות |
+| `siteground-optimizer/v1` | SiteGround Optimizer | מטמון ואופטימיזציה. **לא LiteSpeed Cache**, בניגוד לתכנון |
+| `elementor/v1`, `elementor-pro/v1`, `elementor-one/v1`, `elementor-ai/v1` | Elementor, Elementor Pro ותוספות | בניית הממשק |
+| `elementor-hello-elementor/v1` | ערכת Hello Elementor | ערכת נושא מינימלית. כל התבניות נבנות ב-Elementor |
+| `aios/v1/onboarding` | נראה All In One Security | תוסף אבטחה. עלול להשפיע על גישה ל-REST |
+| `safe-svg/v1`, `duplicate-post/v1` | העלאת SVG, שכפול פוסטים | |
+| `file-manager-advanced/v1`, `advanced-db-cleaner/v1` | ניהול קבצים וניקוי מסד נתונים | כלי פיתוח. לא להשאיר בפרודקשן |
+| `mcp`, `elementor-mcp-composer/v1.0.20`, `wp-abilities/v1` | ממשק MCP ויכולות | מרמזים שהאתר חושף ממשק לסוכני AI. לא משתמשים בו |
+| `novamira/v1` | לא מזוהה | לברר |
+| `wp/v2`, `oembed/1.0`, `wp-site-health/v1`, `wp-block-editor/v1` | ליבת וורדפרס | |
+
+**מה לא נמצא ברשימה:** אין namespace שמכיל `jet` (JetEngine ותוספי Crocoblock), וגם לא `acf`, `pods` או `metabox`.
+
+**משמעות:** אין סימן ל-JetEngine באתר הדוגמה. זה לא מוכיח שהוא לא מותקן, כי לא ידוע אם JetEngine רושם namespace משלו. לבדיקה נוספת: מקור הדף (חיפוש `jet-engine`) ולשונית Network (סינון `plugins/`). אם הוא באמת לא בשימוש, צריך לברר איך נבנו ה-CPTs והתצוגות הדינמיות, כי זה משפיע על התוכנית כולה.
