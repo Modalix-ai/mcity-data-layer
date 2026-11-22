@@ -1,0 +1,21 @@
+{
+  "_note": "דומיין ישן (rt_domains.id) -> עיר חדשה. סלאגים לפי מסמך 10 סעיף 1 ולא אומתו מול העותק. הטוען מוצא עיר לפי slug ולא יוצר ערים.",
+  "1":  {"kind": "city", "slug": "modiin", "name": "מודיעין"},
+  "2":  {"kind": "city", "slug": "rishon", "name": "ראשון לציון"},
+  "3":  {"kind": "city", "slug": "petah-tikva", "name": "פתח תקווה"},
+  "4":  {"kind": "city", "slug": "rehovot", "name": "רחובות"},
+  "5":  {"kind": "city", "slug": "tel-aviv", "name": "תל אביב"},
+  "6":  {"kind": "excluded", "reason": "realestate_domain", "name": "בורסת הנדלן"},
+  "7":  {"kind": "city", "slug": "holon", "name": "חולון בת-ים"},
+  "8":  {"kind": "city", "slug": "jerusalem", "name": "ירושלים"},
+  "9":  {"kind": "national", "name": "פורום החדשות (הדף הכחול)"},
+  "10": {"kind": "city", "slug": "north", "name": "ערי הצפון"},
+  "11": {"kind": "city", "slug": "drom-hasharon", "name": "דרום השרון"},
+  "12": {"kind": "city", "slug": "ramat-gan", "name": "רמת גן"},
+  "13": {"kind": "city", "slug": "haifa", "name": "חיפה והעמקים"},
+  "14": {"kind": "city", "slug": "sharon", "name": "ערי השרון"},
+  "15": {"kind": "city", "slug": "ashdod", "name": "אשקלון - אשדוד"},
+  "16": {"kind": "city", "slug": "beer-sheva", "name": "באר שבע והדרום"},
+  "17": {"kind": "excluded", "reason": "elections_domain", "name": "בחירות ברשויות המקומיות"},
+  "18": {"kind": "excluded", "reason": "english_domain", "name": "English"}
+}
