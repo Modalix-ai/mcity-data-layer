@@ -15,10 +15,10 @@
 | נושא | ממצא | ודאות |
 |---|---|---|
 | ליבה | WordPress 7.1.4, Elementor 4.4.0, Elementor Pro, ערכת Hello Elementor Child | ✅ |
-| שדות | **ACF 6.8.11, נראה שהגרסה החינמית** (אין שדות Pro בייצוא). אין JetEngine ואין Crocoblock | ✅ (Pro או חינמי: ❓) |
+| שדות | **ACF 6.8.11, חינמי (אושר על ידי המפתח, 2026-11-12)**. אין JetEngine ואין Crocoblock | ✅ |
 | SEO | Yoast SEO 28.8 (חינמי) | ✅ |
 | הפניות | Redirection (2 כללים) | ✅ |
-| מטמון | SiteGround Speed Optimizer (לא LiteSpeed) | ✅ |
+| מטמון | SiteGround Speed Optimizer (לא LiteSpeed). **הפרודקשן (הישן והחדש) מתוכנן על SPD, והתוסף ייחודי ל-SiteGround** | ✅ בתוסף, ❓ מה יישאר בפרודקשן |
 | אחר | Burst Statistics, AIOS (אבטחה), UpdraftPlus, Disable Comments, Antispam Bee | ✅/📄 |
 | תוספים מותאמים | `MCITY כלים` (`mcity-tools`) ו-`MCITY שאלות למומחה` (`mcity-expert-answers` 1.0.0) | ✅ |
 | **Novamira 1.12.15** | כלי פיתוח שמריץ PHP ויוצר קישורי אדמין. **חייב לצאת לפני פרודקשן.** בעותק שלנו הוא כובה אוטומטית (הדומיין השתנה) וכך נשאיר | ✅ |
@@ -48,7 +48,7 @@
 
 ### מומחים
 - **משתמשי וורדפרס** עם תפקיד `author` ששמו הוצג "מומחה". אין תפקיד נפרד. מנהלים מקודדים לפי מזהי משתמש 1, 6, 7. ✅
-- שדות ACF על המשתמש: `mc_active`, `mc_subscription_end` (Ymd), `profession`, `phone` (**מסוג number**), `address` (טקסט חופשי), `url_business_card`, 7 תמונות באנר ו-8 קישורים, `user_videos` (קשר ל-`videos`). ✅
+- שדות ACF על המשתמש: `mc_active`, `mc_subscription_end` (Ymd), `profession`, `phone` (**מסוג number**), `address` (טקסט חופשי), `url_business_card`, 7 תמונות באנר ו-7 קישורי באנר (חובה). **אומת בדף עריכה (2026-11-18):** 'שמונה קישורים' = 7 קישורי באנר + קישור כרטיס הביקור, ואין קישורי תוכן חופשיים, `user_videos` (קשר ל-`videos`). ✅
 - כתובות: כחול `/expert/{slug}/`, אדום `/{עיר}/expert/{slug}/` (`add_rewrite_rule` ומשתנה `mc_city`). ה-canonical מצביע לכחול. 📄
 - המפתח עצמו רשם "הפרדה בין משתמשים למומחים" כמשימה פתוחה. 📄
 
@@ -116,6 +116,6 @@
 
 - דאמפ MySQL של האתר הישן (חובה למיגרציה).
 - מסד נתונים וקבצים מלאים של העותק שלנו, והקוד: `functions.php`, `mcity-tools`, `mcity-expert-answers`.
-- אישור: ACF Pro או חינמי.
+- ~~אישור ACF Pro או חינמי~~: אושר חינמי. גישת אדמין לאתר הקיים ודאמפ התבקשו מהמפתח.
 - בדיקות אופציונליות: תנאי תצוגה בשלוש תבניות (כותרת חיפה, ארכיון עיר אדום, עמוד מומחה), ו"Collect Submissions" בטפסי Elementor.
 - אישור מהמעצב אם מותר לחבר את רישיון Elementor לעותק שלנו.
