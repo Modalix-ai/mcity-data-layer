@@ -230,6 +230,18 @@ class ArticlesTest(unittest.TestCase):
         self.assertEqual(c["refs"]["inline_images"], ["/files_media/a.jpg"])
         self.assertIn("1002", c["refs"]["internal_ids"])
 
+    def test_section_pointing_to_non_expert_keeps_writer(self):
+        # מדור 'קובי עצבני' מצביע לרשומת mcity פנימית: הכותב נשאר המחבר
+        from mcimport.articles import build_articles as ba
+        db, ex, a, st, col, cl, st_u, st_w, wd, widx, p = run_all()
+        ex2 = dict(ex)
+        ex2[1] = dict(ex[1], hold=["not_an_expert"])
+        secs, cl2 = load_sections(db)
+        recs, st2, _ = ba(db, load_domains(), cl2, {s["id"]: s for s in secs}, ex2, widx, p)
+        r = {x["legacy_id"]: x for x in recs}[3]
+        self.assertEqual((r["author"], r["author_source"]), ("writer:30", "writer"))
+        self.assertIn("section_points_to_non_expert", r["flags"])
+
     def test_limit(self):
         _, _, a, st, *_ = run_all(limit=3)
         self.assertEqual(st["seen"], 3)

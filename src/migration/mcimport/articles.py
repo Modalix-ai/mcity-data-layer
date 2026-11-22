@@ -92,7 +92,10 @@ def build_articles(db, domains_map, sec_cls, secs_by_id, experts_by_id, writer_i
         elif a["forum_expert_id"]:
             flags.append("article_expert_missing")
         if author_src == "writer" and sec_expert:
-            if sec_expert in experts_by_id:
+            if sec_expert in experts_by_id and "not_an_expert" in experts_by_id[sec_expert]["hold"]:
+                # מדור שמצביע לרשומה פנימית (למשל 'מעגל mcity') הוא טור של כותב, לא של מומחה
+                flags.append("section_points_to_non_expert")
+            elif sec_expert in experts_by_id:
                 author_key, author_src = "expert:%d" % sec_expert, "section_expert"
             else:
                 flags.append("section_expert_missing")
