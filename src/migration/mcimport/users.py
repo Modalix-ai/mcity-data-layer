@@ -19,6 +19,8 @@ SYSTEM_NAMES = {"mcity", "מערכת mcity", "דוברות", "מערכת", "mcit
 GUEST_NAMES = {"כתב אורח"}
 MARKETING_WRITER_RE = re.compile(r"תוכן שיווקי|buypost|best links?|mega links|seo rush|אופיר כתבות תדמית|linkshak|לינקשייק", re.I)
 AGENCY_WRITER_RE = re.compile(r"buypost|best links?|mega links|seo rush|אופיר כתבות תדמית|linkshak|לינקשייק", re.I)
+# סוכנויות קידום קישורים שהלקוח ביקש להשאיר (24.11.2026, תשובה על רשימת הכותבים): הכתבות נשארות גם בלי קרדיט
+KEEP_AGENCY_WRITER_RE = re.compile(r"buypost|best links?|mega links|seo rush|אופיר כתבות תדמית|linkshak|לינקשייק", re.I)
 _MKT_SUFFIX_RE = re.compile(r"\s*[-–]?\s*תוכן שיווקי\s*$|^\s*תוכן שיווקי\s*[-–]?\s*")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
@@ -222,8 +224,10 @@ def classify_writer(name):
 
 
 def marketing_kind(name):
-    """agency = קידום קישורים של סוכנות, או 'תוכן שיווקי' בלי שם (אין קרדיט). expert = כתבה בשם מומחה או חברה ('<שם> - תוכן שיווקי')."""
+    """agency_kept = סוכנות קידום קישורים שהלקוח אישר להשאיר (6 שמות). agency = 'תוכן שיווקי' בלי שם (אין קרדיט). expert = כתבה בשם מומחה או חברה ('<שם> - תוכן שיווקי')."""
     n = norm_name(name)
+    if KEEP_AGENCY_WRITER_RE.search(n):
+        return "agency_kept"
     if AGENCY_WRITER_RE.search(n):
         return "agency"
     base = _MKT_SUFFIX_RE.sub("", n).strip(" -–")

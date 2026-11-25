@@ -48,7 +48,7 @@ def build_report(policy, as_of, sec_cls, secs_by_id, sec_article_counts, stat_us
     L.append(_table(_stat_rows(s, "hold_"), ["סיבה", "כתבות"]))
     L.append("")
     L.append("תוכן שיווקי: " + ", ".join("%s=%s" % (k[10:], "{:,}".format(v)) for k, v in sorted(s.items()) if k.startswith("marketing_")))
-    L.append("(agency = קידום קישורים של סוכנויות; expert = כתבות בשם מומחה משלם, רובן שאלות ותשובות)")
+    L.append("(agency_kept = 6 סוכנויות קידום קישורים שהלקוח אישר להשאיר; agency = בלי קרדיט, מוסר; expert = כתבות בשם מומחה משלם, רובן שאלות ותשובות)")
     L.append("")
     L.append("### דגלים (לידיעה, לא עוצרים)")
     L.append(_table(_stat_rows(s, "flag_"), ["דגל", "כתבות"]))

@@ -21,6 +21,7 @@ class Policy:
     cutoff_year: int = 2015              # שנת חתך (הלקוח, 24.11.2026): מ-2015 ואילך. None = בלי חיתוך
     pre_cutoff: str = "exclude"          # exclude | hold   (כתבות לפני החתך: מוסרות, לא מוחזקות)
     marketing_agency: str = "exclude"    # exclude | hold | include   (הלקוח: תוכן שיווקי בלי שם מומחה או חברה מוסר) (קידום קישורים של סוכנויות: buypost, Best Links וכו', ~5,400 כתבות)
+    marketing_agency_kept: str = "include"  # exclude | hold | include   (הלקוח, 24.11: buypost, Best Links, אופיר כתבות תדמית, Mega Links, לינקשייק, Seo Rush נשארים, ~5,400 כתבות)
     marketing_expert: str = "include"    # exclude | hold | include   (הלקוח: עם שם מומחה או חברה נשאר) (כתבות בשם מומחה משלם, "<שם> - תוכן שיווקי", ~2,700, רובן שאלות ותשובות)
     expired_experts: str = "include"     # hold | include   (הלקוח, 24.11: נשארים, מטעמים משפטיים. הלקוח יסיר ידנית אם ירצה)   (מנוי שפג: מיובא כלא פעיל רק אם include)
     inactive_experts: str = "include"    # hold | include   (הלקוח, 24.11: נשארים, מטעמים משפטיים)   (מומחים לא פעילים)

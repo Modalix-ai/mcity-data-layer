@@ -116,8 +116,13 @@ def build_articles(db, domains_map, sec_cls, secs_by_id, experts_by_id, writer_i
         if marketing:
             # קרדיט (הלקוח, 24.11): שיווקי עם מומחה או חברה בקרדיט נשאר, בלי קרדיט מוסר. קרדיט = מומחה מקושר, או כותב בשם מומחה/חברה
             credited = author_src in ("article_expert", "section_expert") or w_kind == "marketing_expert"
-            mkt_kind = "expert" if credited else "agency"
-            act = policy.marketing_agency if mkt_kind == "agency" else policy.marketing_expert
+            if credited:
+                mkt_kind = "expert"
+            elif w_kind == "marketing_agency_kept":
+                mkt_kind = "agency_kept"      # הלקוח (24.11): 6 סוכנויות נשארות גם בלי קרדיט; חתומות 'תוכן שיווקי'
+            else:
+                mkt_kind = "agency"
+            act = {"expert": policy.marketing_expert, "agency_kept": policy.marketing_agency_kept}.get(mkt_kind, policy.marketing_agency)
             if act == "exclude":
                 stats["excluded_marketing_" + mkt_kind] += 1
                 continue

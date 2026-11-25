@@ -19,7 +19,7 @@ from mcimport.users import build_experts, build_staff_and_writers, normalize_pho
 
 AS_OF = "20261122"
 # התנהגות 'מחזיק הכול' (לפני החלטות הלקוח). בדיקות הכללים רצות עליה; החלטות הלקוח נבדקות ב-ClientDecisionsTest
-HOLD = dict(cutoff_year=None, marketing_agency="hold", marketing_expert="hold", forum="hold",
+HOLD = dict(cutoff_year=None, marketing_agency="hold", marketing_agency_kept="hold", marketing_expert="hold", forum="hold",
             inactive_experts="hold", expired_experts="hold")
 
 
@@ -207,7 +207,7 @@ class ArticlesTest(unittest.TestCase):
         self.assertEqual(self.a[11]["author"], "staff:guest")
 
     def test_holds(self):
-        self.assertIn("marketing_agency", self.a[5]["hold"])
+        self.assertIn("marketing_agency_kept", self.a[5]["hold"])   # buypost: ברשימת הסוכנויות שהלקוח השאיר
         self.assertIn("marketing_agency", self.a[6]["hold"])
         self.assertIn("marketing_expert", self.a[22]["hold"])
         self.assertEqual(self.a[22]["author"], "expert:1")       # נשמר שמו של המומחה
@@ -218,10 +218,13 @@ class ArticlesTest(unittest.TestCase):
     def test_marketing_include_policy(self):
         _, _, a, *_ = run_all(hold_policy(marketing_expert="include"))
         self.assertEqual(a[22]["hold"], [])                      # מומחה משלם: מותר
-        self.assertIn("marketing_agency", a[5]["hold"])          # סוכנות: עדיין מוחזק
-        _, _, a, *_ = run_all(hold_policy(marketing_agency="include"))
+        self.assertIn("marketing_agency_kept", a[5]["hold"])     # סוכנות: עדיין מוחזק
+        _, _, a, *_ = run_all(hold_policy(marketing_agency_kept="include"))
         self.assertEqual(a[5]["hold"], [])
-        self.assertIn("marketing_agency", a[5]["flags"])
+        self.assertIn("marketing_agency_kept", a[5]["flags"])
+        _, _, a, *_ = run_all(hold_policy(marketing_agency="include"))
+        self.assertEqual(a[6]["hold"], [])
+        self.assertIn("marketing_agency", a[6]["flags"])
 
     def test_cutoff(self):
         _, _, a, *_ = run_all(hold_policy(cutoff_year=2010, pre_cutoff="hold"))
@@ -302,7 +305,7 @@ class EndToEndTest(unittest.TestCase):
         m1, rep = self._run(out)
         m2, _ = self._run(out)
         self.assertEqual(m1["sha256"], m2["sha256"])
-        self.assertEqual(m1["counts"]["articles.jsonl"], 18)   # 22 פחות 1 לפני החתך ופחות 3 שיווק בלי קרדיט
+        self.assertEqual(m1["counts"]["articles.jsonl"], 19)   # 22 פחות 1 לפני החתך ופחות 2 שיווק בלי קרדיט (buypost נשאר)
         for n in ("users.jsonl", "articles.jsonl", "forum.jsonl", "sections.jsonl", "report.md", "manifest.json"):
             self.assertTrue(os.path.exists(os.path.join(out, n)), n)
         self.assertIn("דוח ייבוא", rep)
@@ -326,16 +329,17 @@ class ClientDecisionsTest(unittest.TestCase):
 
     def test_defaults(self):
         p = Policy()
-        self.assertEqual((p.cutoff_year, p.pre_cutoff, p.marketing_agency, p.marketing_expert, p.forum),
-                         (2015, "exclude", "exclude", "include", "exclude"))
+        self.assertEqual((p.cutoff_year, p.pre_cutoff, p.marketing_agency, p.marketing_agency_kept, p.marketing_expert, p.forum),
+                         (2015, "exclude", "exclude", "include", "include", "exclude"))
 
     def test_articles(self):
         _, ex, a, st, *_ = run_all(Policy())
         self.assertNotIn(19, a)                       # 2005 לפני החתך: מוסרת
         self.assertEqual(st["excluded_before_cutoff"], 1)
-        self.assertNotIn(5, a)                        # שיווק סוכנות (buypost): מוסר
-        self.assertNotIn(6, a)                        # שיווק לפי מדור: מוסר
-        self.assertEqual(st["excluded_marketing_agency"], 3)   # 5, 6 ו-24 (בלי קרדיט)
+        self.assertIn(5, a)                           # סוכנות buypost: הלקוח אישר להשאיר (24.11)
+        self.assertEqual((a[5]["marketing_kind"], a[5]["author"], a[5]["hold"]), ("agency_kept", "staff:marketing", []))
+        self.assertNotIn(6, a)                        # שיווק לפי מדור, כותב אחר בלי קרדיט: מוסר
+        self.assertEqual(st["excluded_marketing_agency"], 2)   # 6 ו-24 (בלי קרדיט, לא ברשימת הסוכנויות שנשארות)
         self.assertNotIn(24, a)
         self.assertIn(23, a)                          # מדור שיווקי אבל מומחה בקרדיט: נשארת
         self.assertEqual(a[23]["marketing_kind"], "expert")

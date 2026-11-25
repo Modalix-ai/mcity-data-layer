@@ -43,7 +43,8 @@ python -m mcimport run --db /path/old.db --out /path/OUTSIDE_REPO/out --as-of 20
 |---|---|---|
 | `cutoff_year` | `2015` | כתבות מלפני השנה מוסרות (2015 נכללת) |
 | `pre_cutoff` | `exclude` | `hold` מחזיק במקום להסיר |
-| `marketing_agency` | `exclude` | תוכן שיווקי **בלי קרדיט** (סוכנויות קידום קישורים, או "תוכן שיווקי" בלי שם) |
+| `marketing_agency` | `exclude` | תוכן שיווקי **בלי קרדיט** ("תוכן שיווקי" בלי שם, וכותבים שלא ברשימת הסוכנויות שנשארות): 124 כתבות |
+| `marketing_agency_kept` | `include` | 6 סוכנויות קידום קישורים שהלקוח אישר להשאיר (buypost, Best Links, אופיר כתבות תדמית, Mega Links, לינקשייק, Seo Rush): 5,421 כתבות, חתומות על חשבון הצוות "תוכן שיווקי" |
 | `marketing_expert` | `include` | תוכן שיווקי **עם קרדיט** של מומחה (מקושר) או כותב בשם מומחה/חברה; נחתם על שמם |
 | `forum` | `exclude` | שאלות שפורסמו ולא הומרו לכתבה |
 | `inactive_experts`, `expired_experts` | `include` | נשארים (הלקוח, מטעמים משפטיים), מוסתרים מהרשימה ולא מהכתבות |
