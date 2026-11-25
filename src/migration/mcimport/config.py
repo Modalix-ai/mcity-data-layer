@@ -18,15 +18,16 @@ TOPICS = [
 @dataclass
 class Policy:
     # --- תלויי לקוח (X7a). ברירת מחדל: להחזיק ולא לכתוב ---
-    cutoff_year: int = None              # שנת חתך. None = בלי חיתוך
-    marketing_agency: str = "hold"       # hold | include   (קידום קישורים של סוכנויות: buypost, Best Links וכו', ~5,400 כתבות)
-    marketing_expert: str = "hold"       # hold | include   (כתבות בשם מומחה משלם, "<שם> - תוכן שיווקי", ~2,700, רובן שאלות ותשובות)
+    cutoff_year: int = 2015              # שנת חתך (הלקוח, 24.11.2026): מ-2015 ואילך. None = בלי חיתוך
+    pre_cutoff: str = "exclude"          # exclude | hold   (כתבות לפני החתך: מוסרות, לא מוחזקות)
+    marketing_agency: str = "exclude"    # exclude | hold | include   (הלקוח: תוכן שיווקי בלי שם מומחה או חברה מוסר) (קידום קישורים של סוכנויות: buypost, Best Links וכו', ~5,400 כתבות)
+    marketing_expert: str = "include"    # exclude | hold | include   (הלקוח: עם שם מומחה או חברה נשאר) (כתבות בשם מומחה משלם, "<שם> - תוכן שיווקי", ~2,700, רובן שאלות ותשובות)
     expired_experts: str = "hold"        # hold | include   (מנוי שפג: מיובא כלא פעיל רק אם include)
     inactive_experts: str = "hold"       # hold | include   (מומחים לא פעילים)
     realestate_experts: str = "hold"     # hold | include
     shared_email: str = "blank"          # blank | keep_first_active
     section_exclusion: str = "hold"      # hold | include  (כתבות שכל המדורים שלהן נדל"ן/בחירות/בדיקה)
-    forum: str = "hold"                  # hold | include  (שאלות ותשובות שפורסמו ולא הומרו)
+    forum: str = "exclude"               # exclude | hold | include  (הלקוח: שאלות שפורסמו ולא הומרו לכתבה מוסרות)
     # --- תלויי מעצב ---
     slug_policy: str = "hebrew"          # hebrew | translit   (X19)
     # --- מדיניות פנימית שלנו, להכרעה ---

@@ -254,6 +254,11 @@ def build_staff_and_writers(db, policy, experts_by_id=None):
                     key = cands[0]
                 else:
                     stats["marketing_expert_unmatched"] += 1
+                    # שם חברה או מומחה שלא זוהה: שומרים את שמו כחתימה, לא 'תוכן שיווקי'
+                    key = "writer:%s" % wid
+                    recs.append({"key": key, "kind": "contributor", "legacy_id": int(wid), "role": "contributor",
+                                 "login": "mc_writer_%s" % wid, "display_name": base, "email": "",
+                                 "hold": [], "flags": ["marketing_named"]})
             index[wid] = (key, "marketing_" + mk)
         elif n_art == 0:
             stats["writers_skipped_no_articles"] += 1

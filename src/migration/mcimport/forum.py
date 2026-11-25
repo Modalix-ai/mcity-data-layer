@@ -42,6 +42,9 @@ def build_forum(db, experts_by_id, article_legacy_ids, policy):
         else:
             bucket = "published_unconverted"
         hold = []
+        if bucket in ("published_unconverted", "unanswered") and policy.forum == "exclude":
+            stats["excluded_" + bucket] += 1
+            continue
         if bucket in ("published_unconverted", "unanswered") and policy.forum == "hold":
             hold.append("forum_policy")
         if bucket == "inactive":

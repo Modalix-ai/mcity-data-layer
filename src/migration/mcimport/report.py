@@ -40,6 +40,10 @@ def build_report(policy, as_of, sec_cls, secs_by_id, sec_article_counts, stat_us
         ("התנגשויות slug", "{:,}".format(s["slug_collisions"])),
     ], ["נושא", "כמות"]))
     L.append("")
+    L.append("### הוסרו לפי החלטת הלקוח (לא נכתבות, לא ממתינות)")
+    exc = _stat_rows(s, "excluded_") + [("פורום: " + k, v) for k, v in _stat_rows(stat_forum, "excluded_")]
+    L.append(_table(exc, ["סיבה", "כמות"]))
+    L.append("")
     L.append("### hold (ממתין להכרעה)")
     L.append(_table(_stat_rows(s, "hold_"), ["סיבה", "כתבות"]))
     L.append("")

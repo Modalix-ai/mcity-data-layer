@@ -18,11 +18,17 @@ from mcimport.textutil import assign_slugs, clean_content, extract_refs, to_gmt 
 from mcimport.users import build_experts, build_staff_and_writers, normalize_phone  # noqa: E402
 
 AS_OF = "20261122"
+# התנהגות 'מחזיק הכול' (לפני החלטות הלקוח). בדיקות הכללים רצות עליה; החלטות הלקוח נבדקות ב-ClientDecisionsTest
+HOLD = dict(cutoff_year=None, marketing_agency="hold", marketing_expert="hold", forum="hold")
+
+
+def hold_policy(**kw):
+    return Policy(**{**HOLD, **kw})
 
 
 def run_all(policy=None, **kw):
     db = fixture.build()
-    p = policy or Policy()
+    p = policy or hold_policy()
     dm = load_domains()
     experts, st_u = build_experts(db, dm, p, AS_OF)
     ex = {r["legacy_id"]: r for r in experts}
@@ -119,7 +125,7 @@ class UsersTest(unittest.TestCase):
         self.assertEqual(self.ex[8]["email_status"], "missing")
 
     def test_keep_first_active_policy(self):
-        _, ex, *_ = run_all(Policy(shared_email="keep_first_active"))
+        _, ex, *_ = run_all(hold_policy(shared_email="keep_first_active"))
         self.assertEqual(ex[2]["email"], "shared@example.com")
         self.assertEqual(ex[3]["email"], "")
 
@@ -209,15 +215,15 @@ class ArticlesTest(unittest.TestCase):
         self.assertEqual(self.a[1]["hold"], [])
 
     def test_marketing_include_policy(self):
-        _, _, a, *_ = run_all(Policy(marketing_expert="include"))
+        _, _, a, *_ = run_all(hold_policy(marketing_expert="include"))
         self.assertEqual(a[22]["hold"], [])                      # מומחה משלם: מותר
         self.assertIn("marketing_agency", a[5]["hold"])          # סוכנות: עדיין מוחזק
-        _, _, a, *_ = run_all(Policy(marketing_agency="include"))
+        _, _, a, *_ = run_all(hold_policy(marketing_agency="include"))
         self.assertEqual(a[5]["hold"], [])
         self.assertIn("marketing_agency", a[5]["flags"])
 
     def test_cutoff(self):
-        _, _, a, *_ = run_all(Policy(cutoff_year=2010))
+        _, _, a, *_ = run_all(hold_policy(cutoff_year=2010, pre_cutoff="hold"))
         self.assertIn("before_cutoff", a[19]["hold"])
         self.assertNotIn("before_cutoff", a[1]["hold"])
 
@@ -275,7 +281,7 @@ class ForumTest(unittest.TestCase):
         self.assertNotIn("כתובת", blob)
 
     def test_include_policy(self):
-        db, ex, a, *_, p = run_all(Policy(forum="include"))
+        db, ex, a, *_, p = run_all(hold_policy(forum="include"))
         recs, _ = build_forum(db, ex, set(a), p)
         self.assertEqual({r["legacy_id"]: r for r in recs}[2]["hold"], [])
 
@@ -295,7 +301,7 @@ class EndToEndTest(unittest.TestCase):
         m1, rep = self._run(out)
         m2, _ = self._run(out)
         self.assertEqual(m1["sha256"], m2["sha256"])
-        self.assertEqual(m1["counts"]["articles.jsonl"], 20)
+        self.assertEqual(m1["counts"]["articles.jsonl"], 17)   # 20 פחות 1 לפני החתך ופחות 2 שיווק סוכנות
         for n in ("users.jsonl", "articles.jsonl", "forum.jsonl", "sections.jsonl", "report.md", "manifest.json"):
             self.assertTrue(os.path.exists(os.path.join(out, n)), n)
         self.assertIn("דוח ייבוא", rep)
@@ -308,10 +314,42 @@ class EndToEndTest(unittest.TestCase):
         db = os.environ.get("MC_OLD_DB")
         if not db or not os.path.exists(db):
             self.skipTest("MC_OLD_DB לא הוגדר")
-        m, _ = cli.run(db, tempfile.mkdtemp(), as_of=AS_OF)
+        m, _ = cli.run(db, tempfile.mkdtemp(), as_of=AS_OF, policy=hold_policy())
         self.assertEqual(m["counts"]["forum.jsonl"], 7114)
         self.assertEqual(m["counts"]["sections.jsonl"], 255)
         self.assertEqual(m["counts"]["articles.jsonl"] + 214, 38534)
+
+
+class ClientDecisionsTest(unittest.TestCase):
+    """תשובות הלקוח מ-24.11.2026 הן ברירות המחדל."""
+
+    def test_defaults(self):
+        p = Policy()
+        self.assertEqual((p.cutoff_year, p.pre_cutoff, p.marketing_agency, p.marketing_expert, p.forum),
+                         (2015, "exclude", "exclude", "include", "exclude"))
+
+    def test_articles(self):
+        _, ex, a, st, *_ = run_all(Policy())
+        self.assertNotIn(19, a)                       # 2005 לפני החתך: מוסרת
+        self.assertEqual(st["excluded_before_cutoff"], 1)
+        self.assertNotIn(5, a)                        # שיווק סוכנות (buypost): מוסר
+        self.assertNotIn(6, a)                        # שיווק לפי מדור: מוסר
+        self.assertEqual(st["excluded_marketing_agency"], 2)
+        self.assertIn(22, a)                          # בשם מומחה: נשארת, בלי hold, ועל שמו
+        self.assertEqual((a[22]["hold"], a[22]["author"]), ([], "expert:1"))
+        self.assertIn(1, a)
+
+    def test_forum(self):
+        db, ex, a, *_, p = run_all(Policy())
+        recs, st = build_forum(db, ex, set(a), p)
+        self.assertEqual({r["bucket"] for r in recs}, {"converted", "inactive"})
+        self.assertEqual(st["excluded_published_unconverted"], 1)
+        self.assertEqual(st["excluded_unanswered"], 1)
+
+    def test_cutoff_boundary_inclusive(self):
+        _, _, a, *_ = run_all(hold_policy(cutoff_year=2015))
+        self.assertIn(1, a)                           # 2015-06-01 נכללת
+        self.assertNotIn(19, a)
 
 
 class ImagesTest(unittest.TestCase):

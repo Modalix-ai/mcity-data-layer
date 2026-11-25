@@ -35,18 +35,21 @@ python -m mcimport run --db /path/old.db --out /path/OUTSIDE_REPO/out --as-of 20
 - **`hold`**: החלטה פתוחה. רשומה עם hold לא נכתבת לאתר. כך שום דבר שתלוי בלקוח או במעצב לא נכתב בשקט.
 - **`flags`**: לידיעה בלבד (לא עוצרים).
 
-## מדיניות (`--policy`)
+## מדיניות (`--policy k=v`)
 
-| פרמטר | ברירת מחדל | אפשרויות |
+ברירות המחדל הן **תשובות הלקוח מ-24.11.2026**. הערכים: `exclude` (מוסר, לא נכתב ולא ממתין), `hold` (ממתין להכרעה), `include`.
+
+| פרמטר | ברירת מחדל | הערה |
 |---|---|---|
-| `marketing_agency` (קידום קישורים של סוכנויות) | `hold` | `include` |
-| `marketing_expert` (כתבה בשם מומחה משלם) | `hold` | `include` |
-| `inactive_experts`, `expired_experts`, `realestate_experts` | `hold` | `include` |
-| `shared_email` | `blank` | `keep_first_active` |
-| `section_exclusion` | `hold` | `include` |
-| `forum` | `hold` | `include` |
-| `cutoff_year` | ללא | שנה (כתבות קודמות מקבלות hold) |
-| `slug_policy` | `hebrew` | `translit` |
+| `cutoff_year` | `2015` | כתבות מלפני השנה מוסרות (2015 נכללת) |
+| `pre_cutoff` | `exclude` | `hold` מחזיק במקום להסיר |
+| `marketing_agency` | `exclude` | תוכן שיווקי בלי שם מומחה או חברה (קידום קישורים של סוכנויות) |
+| `marketing_expert` | `include` | תוכן שיווקי בשם מומחה או חברה, נחתם על שמם |
+| `forum` | `exclude` | שאלות שפורסמו ולא הומרו לכתבה |
+| `inactive_experts`, `expired_experts`, `realestate_experts` | `hold` | טרם הוכרע |
+| `shared_email` | `blank` | `keep_first_active`. הלקוח יחזיר רשימה מתוקנת |
+| `section_exclusion` | `hold` | כתבות שכל מדוריהן נדל"ן, בחירות או בדיקה |
+| `slug_policy` | `hebrew` | `translit` (ממתין למעצב) |
 | `writer_policy` | `contributor` | `staff` |
 
 ## איך מסווגים מדורים שלא סווגו

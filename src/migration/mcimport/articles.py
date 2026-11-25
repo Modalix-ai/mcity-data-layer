@@ -49,6 +49,13 @@ def build_articles(db, domains_map, sec_cls, secs_by_id, experts_by_id, writer_i
             break
         stats["seen"] += 1
 
+        # --- חתך שנים (הלקוח): לפני השנה מוסרות, לפני כל בדיקה אחרת ---
+        created, modified = (a["created"] or "")[:19], (a["modified"] or "")[:19]
+        year = int(created[:4]) if created[:4].isdigit() else None
+        if policy.cutoff_year and year and year < policy.cutoff_year and policy.pre_cutoff == "exclude":
+            stats["excluded_before_cutoff"] += 1
+            continue
+
         # --- ערים ---
         dom_ids = _ints(a["domains"])
         regional = sorted({domains_map[d]["slug"] for d in dom_ids if domains_map.get(d, {}).get("kind") == "city"})
@@ -77,7 +84,8 @@ def build_articles(db, domains_map, sec_cls, secs_by_id, experts_by_id, writer_i
         excluded_kinds = {"realestate", "elections", "junk"}
         if kinds and all(k in excluded_kinds for k in kinds) and policy.section_exclusion == "hold":
             hold.append("section_excluded")
-        marketing_sec = "marketing" in kinds
+        marketing_sec = any(sec_cls[s]["kind"] == "marketing" and sec_cls[s]["confidence"] == "auto" for s in sec_ids if s in sec_cls)
+        marketing_sec_proposed = any(sec_cls[s]["kind"] == "marketing" and sec_cls[s]["confidence"] == "proposed" for s in sec_ids if s in sec_cls)
         if not topics and not sec_expert:
             flags.append("no_topic")
         if len(topics) > 1:
@@ -107,16 +115,20 @@ def build_articles(db, domains_map, sec_cls, secs_by_id, experts_by_id, writer_i
         mkt_kind = None
         if marketing:
             mkt_kind = "expert" if (w_kind == "marketing_expert" and not marketing_sec) else "agency"
-            if mkt_kind == "agency" and policy.marketing_agency == "hold":
-                hold.append("marketing_agency")
-            if mkt_kind == "expert" and policy.marketing_expert == "hold":
-                hold.append("marketing_expert")
+            act = policy.marketing_agency if mkt_kind == "agency" else policy.marketing_expert
+            if act == "exclude":
+                stats["excluded_marketing_" + mkt_kind] += 1
+                continue
+            if act == "hold":
+                hold.append("marketing_" + mkt_kind)
             flags.append("marketing_" + mkt_kind)
             stats["marketing_%s_%s" % (mkt_kind, "section" if marketing_sec else "writer")] += 1
 
+        if marketing_sec_proposed and not marketing:
+            hold.append("marketing_section_unconfirmed")
+            flags.append("marketing_section_proposed")
+
         # --- תאריכים וסטטוס ---
-        created, modified = (a["created"] or "")[:19], (a["modified"] or "")[:19]
-        year = int(created[:4]) if created[:4].isdigit() else None
         if policy.cutoff_year and year and year < policy.cutoff_year:
             hold.append("before_cutoff")
         status = "publish" if a["active"] == 1 else "draft"
