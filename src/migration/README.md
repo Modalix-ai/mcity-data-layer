@@ -46,7 +46,8 @@ python -m mcimport run --db /path/old.db --out /path/OUTSIDE_REPO/out --as-of 20
 | `marketing_agency` | `exclude` | תוכן שיווקי **בלי קרדיט** (סוכנויות קידום קישורים, או "תוכן שיווקי" בלי שם) |
 | `marketing_expert` | `include` | תוכן שיווקי **עם קרדיט** של מומחה (מקושר) או כותב בשם מומחה/חברה; נחתם על שמם |
 | `forum` | `exclude` | שאלות שפורסמו ולא הומרו לכתבה |
-| `inactive_experts`, `expired_experts`, `realestate_experts` | `hold` | טרם הוכרע |
+| `inactive_experts`, `expired_experts` | `include` | נשארים (הלקוח, מטעמים משפטיים), מוסתרים מהרשימה ולא מהכתבות |
+| `realestate_experts` | `hold` | טרם הוכרע |
 | `shared_email` | `blank` | `keep_first_active`. הלקוח יחזיר רשימה מתוקנת |
 | `section_exclusion` | `hold` | כתבות שכל מדוריהן נדל"ן, בחירות או בדיקה |
 | `slug_policy` | `hebrew` | `translit` (ממתין למעצב) |

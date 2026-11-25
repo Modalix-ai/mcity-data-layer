@@ -22,8 +22,8 @@ class Policy:
     pre_cutoff: str = "exclude"          # exclude | hold   (כתבות לפני החתך: מוסרות, לא מוחזקות)
     marketing_agency: str = "exclude"    # exclude | hold | include   (הלקוח: תוכן שיווקי בלי שם מומחה או חברה מוסר) (קידום קישורים של סוכנויות: buypost, Best Links וכו', ~5,400 כתבות)
     marketing_expert: str = "include"    # exclude | hold | include   (הלקוח: עם שם מומחה או חברה נשאר) (כתבות בשם מומחה משלם, "<שם> - תוכן שיווקי", ~2,700, רובן שאלות ותשובות)
-    expired_experts: str = "hold"        # hold | include   (מנוי שפג: מיובא כלא פעיל רק אם include)
-    inactive_experts: str = "hold"       # hold | include   (מומחים לא פעילים)
+    expired_experts: str = "include"     # hold | include   (הלקוח, 24.11: נשארים, מטעמים משפטיים. הלקוח יסיר ידנית אם ירצה)   (מנוי שפג: מיובא כלא פעיל רק אם include)
+    inactive_experts: str = "include"    # hold | include   (הלקוח, 24.11: נשארים, מטעמים משפטיים)   (מומחים לא פעילים)
     realestate_experts: str = "hold"     # hold | include
     shared_email: str = "blank"          # blank | keep_first_active
     section_exclusion: str = "hold"      # hold | include  (כתבות שכל המדורים שלהן נדל"ן/בחירות/בדיקה)

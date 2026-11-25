@@ -19,7 +19,8 @@ from mcimport.users import build_experts, build_staff_and_writers, normalize_pho
 
 AS_OF = "20261122"
 # התנהגות 'מחזיק הכול' (לפני החלטות הלקוח). בדיקות הכללים רצות עליה; החלטות הלקוח נבדקות ב-ClientDecisionsTest
-HOLD = dict(cutoff_year=None, marketing_agency="hold", marketing_expert="hold", forum="hold")
+HOLD = dict(cutoff_year=None, marketing_agency="hold", marketing_expert="hold", forum="hold",
+            inactive_experts="hold", expired_experts="hold")
 
 
 def hold_policy(**kw):
@@ -341,6 +342,17 @@ class ClientDecisionsTest(unittest.TestCase):
         self.assertIn(22, a)                          # בשם מומחה: נשארת, בלי hold, ועל שמו
         self.assertEqual((a[22]["hold"], a[22]["author"]), ([], "expert:1"))
         self.assertIn(1, a)
+
+    def test_inactive_and_expired_experts_stay(self):
+        # הלקוח: מומחה לא פעיל או שפג מנוי נשאר (מטעמים משפטיים), והכתבות שלו לא מוחזקות
+        _, ex, a, *_ = run_all(Policy())
+        self.assertEqual(ex[4]["hold"], [])            # לא פעיל
+        self.assertEqual(ex[4]["mc_active"], "0")      # נשאר לא פעיל: מוסתר מהרשימה
+        self.assertEqual(ex[5]["hold"], [])            # מנוי שפג
+        self.assertEqual(ex[5]["mc_subscription_end"], "20200501")
+        self.assertEqual(a[13]["author"], "expert:4")
+        self.assertEqual(a[13]["hold"], [])
+        self.assertIn("not_an_expert", ex[6]["hold"])  # לא מומחה: עדיין ממתין
 
     def test_forum(self):
         db, ex, a, *_, p = run_all(Policy())
