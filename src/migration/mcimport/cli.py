@@ -49,7 +49,7 @@ def run(db_path, out_dir, as_of=None, limit=None, policy=None, only=None, overri
 
     experts, st_users = build_experts(db, dm, policy, as_of)
     experts_by_id = {r["legacy_id"]: r for r in experts}
-    staff_writers, widx, st_writers, wdups = build_staff_and_writers(db, policy)
+    staff_writers, widx, st_writers, wdups = build_staff_and_writers(db, policy, experts_by_id)
     arts, st_art, collisions = build_articles(db, dm, sec_cls, secs_by_id, experts_by_id, widx, policy, limit=limit)
     art_ids = {a["legacy_id"] for a in arts}
     forum, st_forum = build_forum(db, experts_by_id, art_ids, policy)

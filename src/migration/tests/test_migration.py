@@ -26,7 +26,7 @@ def run_all(policy=None, **kw):
     dm = load_domains()
     experts, st_u = build_experts(db, dm, p, AS_OF)
     ex = {r["legacy_id"]: r for r in experts}
-    _, widx, st_w, wd = build_staff_and_writers(db, p)
+    _, widx, st_w, wd = build_staff_and_writers(db, p, ex)
     secs, cl = load_sections(db)
     sb = {s["id"]: s for s in secs}
     arts, st_a, col = build_articles(db, dm, cl, sb, ex, widx, p, **kw)
@@ -150,6 +150,7 @@ class UsersTest(unittest.TestCase):
         self.assertEqual(self.widx["1"][0], "staff:mcity")
         self.assertEqual(self.widx["20"][0], "staff:guest")
         self.assertEqual(self.widx["40"][0], "staff:marketing")
+        self.assertEqual(self.widx["60"], ("expert:1", "marketing_expert"))
         self.assertEqual(self.widx["30"][0], "writer:30")
         self.assertNotIn("50", self.widx)                       # בלי כתבות
         self.assertEqual(self.stw["writer_dup_name_groups"], 1)  # 30 ו-31 לא מאוחדים
@@ -199,16 +200,21 @@ class ArticlesTest(unittest.TestCase):
         self.assertEqual(self.a[11]["author"], "staff:guest")
 
     def test_holds(self):
-        self.assertIn("marketing", self.a[5]["hold"])
-        self.assertIn("marketing", self.a[6]["hold"])
+        self.assertIn("marketing_agency", self.a[5]["hold"])
+        self.assertIn("marketing_agency", self.a[6]["hold"])
+        self.assertIn("marketing_expert", self.a[22]["hold"])
+        self.assertEqual(self.a[22]["author"], "expert:1")       # נשמר שמו של המומחה
         self.assertIn("section_excluded", self.a[7]["hold"])
         self.assertIn("author_expert_held", self.a[13]["hold"])
         self.assertEqual(self.a[1]["hold"], [])
 
     def test_marketing_include_policy(self):
-        _, _, a, *_ = run_all(Policy(marketing="include"))
+        _, _, a, *_ = run_all(Policy(marketing_expert="include"))
+        self.assertEqual(a[22]["hold"], [])                      # מומחה משלם: מותר
+        self.assertIn("marketing_agency", a[5]["hold"])          # סוכנות: עדיין מוחזק
+        _, _, a, *_ = run_all(Policy(marketing_agency="include"))
         self.assertEqual(a[5]["hold"], [])
-        self.assertIn("marketing", a[5]["flags"])
+        self.assertIn("marketing_agency", a[5]["flags"])
 
     def test_cutoff(self):
         _, _, a, *_ = run_all(Policy(cutoff_year=2010))
@@ -289,7 +295,7 @@ class EndToEndTest(unittest.TestCase):
         m1, rep = self._run(out)
         m2, _ = self._run(out)
         self.assertEqual(m1["sha256"], m2["sha256"])
-        self.assertEqual(m1["counts"]["articles.jsonl"], 19)
+        self.assertEqual(m1["counts"]["articles.jsonl"], 20)
         for n in ("users.jsonl", "articles.jsonl", "forum.jsonl", "sections.jsonl", "report.md", "manifest.json"):
             self.assertTrue(os.path.exists(os.path.join(out, n)), n)
         self.assertIn("דוח ייבוא", rep)

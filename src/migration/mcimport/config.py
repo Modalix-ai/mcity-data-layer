@@ -19,7 +19,8 @@ TOPICS = [
 class Policy:
     # --- תלויי לקוח (X7a). ברירת מחדל: להחזיק ולא לכתוב ---
     cutoff_year: int = None              # שנת חתך. None = בלי חיתוך
-    marketing: str = "hold"              # hold | include   (תוכן שיווקי, ~2,700 כתבות)
+    marketing_agency: str = "hold"       # hold | include   (קידום קישורים של סוכנויות: buypost, Best Links וכו', ~5,400 כתבות)
+    marketing_expert: str = "hold"       # hold | include   (כתבות בשם מומחה משלם, "<שם> - תוכן שיווקי", ~2,700, רובן שאלות ותשובות)
     expired_experts: str = "hold"        # hold | include   (מנוי שפג: מיובא כלא פעיל רק אם include)
     inactive_experts: str = "hold"       # hold | include   (מומחים לא פעילים)
     realestate_experts: str = "hold"     # hold | include

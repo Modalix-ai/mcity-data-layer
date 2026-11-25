@@ -101,12 +101,18 @@ def build_articles(db, domains_map, sec_cls, secs_by_id, experts_by_id, writer_i
                 flags.append("section_expert_missing")
         if author_key.startswith("expert:") and experts_by_id[int(author_key.split(":")[1])]["hold"]:
             hold.append("author_expert_held")
-        marketing = marketing_sec or w_kind == "marketing"
-        if marketing and policy.marketing == "hold":
-            hold.append("marketing")
+        w_mkt = w_kind.startswith("marketing_")
+        marketing = marketing_sec or w_mkt
+        # כתבה במדור שיווקי או של סוכנות = agency. כתבה בשם מומחה משלם = expert (אלא אם גם המדור שיווקי)
+        mkt_kind = None
         if marketing:
-            flags.append("marketing")
-            stats["marketing_" + ("both" if marketing_sec and w_kind == "marketing" else "section_only" if marketing_sec else "writer_only")] += 1
+            mkt_kind = "expert" if (w_kind == "marketing_expert" and not marketing_sec) else "agency"
+            if mkt_kind == "agency" and policy.marketing_agency == "hold":
+                hold.append("marketing_agency")
+            if mkt_kind == "expert" and policy.marketing_expert == "hold":
+                hold.append("marketing_expert")
+            flags.append("marketing_" + mkt_kind)
+            stats["marketing_%s_%s" % (mkt_kind, "section" if marketing_sec else "writer")] += 1
 
         # --- תאריכים וסטטוס ---
         created, modified = (a["created"] or "")[:19], (a["modified"] or "")[:19]
@@ -158,6 +164,7 @@ def build_articles(db, domains_map, sec_cls, secs_by_id, experts_by_id, writer_i
             "related_legacy_ids": readmore,
             "image_file": a["image"] or None,
             "refs": refs,
+            "marketing_kind": mkt_kind,
             "hold": hold,
             "flags": flags,
         }

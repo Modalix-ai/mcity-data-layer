@@ -18,6 +18,8 @@ REALESTATE_FIELDS = {96, 102}
 SYSTEM_NAMES = {"mcity", "מערכת mcity", "דוברות", "מערכת", "mcity team"}
 GUEST_NAMES = {"כתב אורח"}
 MARKETING_WRITER_RE = re.compile(r"תוכן שיווקי|buypost|best links?|mega links|seo rush|אופיר כתבות תדמית|linkshak|לינקשייק", re.I)
+AGENCY_WRITER_RE = re.compile(r"buypost|best links?|mega links|seo rush|אופיר כתבות תדמית|linkshak|לינקשייק", re.I)
+_MKT_SUFFIX_RE = re.compile(r"\s*[-–]?\s*תוכן שיווקי\s*$|^\s*תוכן שיווקי\s*[-–]?\s*")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
 STAFF_ACCOUNTS = {
@@ -219,7 +221,12 @@ def classify_writer(name):
     return "writer"
 
 
-def build_staff_and_writers(db, policy):
+def marketing_kind(name):
+    """agency = קידום קישורים של סוכנות. expert = כתבה בשם מומחה משלם ('<שם> - תוכן שיווקי')."""
+    return "agency" if AGENCY_WRITER_RE.search(norm_name(name)) else "expert"
+
+
+def build_staff_and_writers(db, policy, experts_by_id=None):
     """מחזיר (רשומות משתמש, אינדקס: writer_id -> (author_key, סוג), סטטיסטיקה)."""
     counts = Counter()
     for r in _all(db, "select writer, count(*) c from rt_articles group by writer"):
@@ -238,7 +245,16 @@ def build_staff_and_writers(db, policy):
         elif kind == "guest":
             index[wid] = ("staff:guest", kind)
         elif kind == "marketing":
-            index[wid] = ("staff:marketing", kind)
+            mk = marketing_kind(w["name"])
+            key = "staff:marketing"
+            if mk == "expert":
+                base = _MKT_SUFFIX_RE.sub("", norm_name(w["name"])).strip()
+                cands = [r["key"] for r in (experts_by_id or {}).values() if r["display_name"] == base]
+                if len(cands) == 1:
+                    key = cands[0]
+                else:
+                    stats["marketing_expert_unmatched"] += 1
+            index[wid] = (key, "marketing_" + mk)
         elif n_art == 0:
             stats["writers_skipped_no_articles"] += 1
             continue

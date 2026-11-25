@@ -39,7 +39,8 @@ python -m mcimport run --db /path/old.db --out /path/OUTSIDE_REPO/out --as-of 20
 
 | פרמטר | ברירת מחדל | אפשרויות |
 |---|---|---|
-| `marketing` | `hold` | `include` |
+| `marketing_agency` (קידום קישורים של סוכנויות) | `hold` | `include` |
+| `marketing_expert` (כתבה בשם מומחה משלם) | `hold` | `include` |
 | `inactive_experts`, `expired_experts`, `realestate_experts` | `hold` | `include` |
 | `shared_email` | `blank` | `keep_first_active` |
 | `section_exclusion` | `hold` | `include` |
