@@ -103,7 +103,28 @@ def main(argv=None):
     r.add_argument("--limit", type=int)
     r.add_argument("--policy", action="append", default=[])
     r.add_argument("--only")
+    m = sub.add_parser("images-manifest", help="רשימת קבצי התמונות הצפויים מהדאמפ (CSV)")
+    m.add_argument("--db", required=True)
+    m.add_argument("--out", required=True, help="נתיב קובץ CSV")
+    c = sub.add_parser("images-check", help="בדיקת נוכחות מול תיקיית תמונות (לא קורא ולא ממיר)")
+    c.add_argument("--folder", required=True)
+    c.add_argument("--manifest", required=True)
+    c.add_argument("--report")
     a = ap.parse_args(argv)
+    if a.cmd == "images-manifest":
+        from . import images
+        rows = images.build_manifest(a.db)
+        images.write_manifest(rows, a.out)
+        print("קבצים צפויים: {:,} -> {}".format(len(rows), a.out))
+        return 0
+    if a.cmd == "images-check":
+        from . import images
+        text = images.format_check(images.check_folder(a.folder, images.read_manifest(a.manifest)))
+        if a.report:
+            with open(a.report, "w", encoding="utf-8") as f:
+                f.write(text)
+        print(text)
+        return 0
     manifest, _ = run(a.db, a.out, a.as_of, a.limit, Policy.from_pairs(a.policy), a.only.split(",") if a.only else None)
     print(json.dumps(manifest["counts"], ensure_ascii=False))
     print("report:", os.path.join(os.path.abspath(a.out), "report.md"))

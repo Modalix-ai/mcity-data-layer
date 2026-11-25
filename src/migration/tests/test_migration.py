@@ -308,5 +308,38 @@ class EndToEndTest(unittest.TestCase):
         self.assertEqual(m["counts"]["articles.jsonl"] + 214, 38534)
 
 
+class ImagesTest(unittest.TestCase):
+    def _db_file(self):
+        import sqlite3
+        path = os.path.join(tempfile.mkdtemp(), "t.db")
+        mem = fixture.build()
+        mem.execute("update rt_forum_experts set image='e1.JPG' where id=1")
+        mem.commit()
+        disk = sqlite3.connect(path)
+        mem.backup(disk)
+        disk.close()
+        return path
+
+    def test_manifest_and_check(self):
+        from mcimport import images
+        rows = images.build_manifest(self._db_file())
+        names = {r[0]: r for r in rows}
+        self.assertIn("i.jpg", names)                      # תמונה ראשית של כתבות
+        self.assertEqual(names["a.jpg"][1], "article_inline")
+        self.assertEqual(names["e1.JPG"][1], "expert")
+        folder = tempfile.mkdtemp()
+        os.makedirs(os.path.join(folder, "sub"))
+        for rel in ("i.jpg", "sub/A.JPG", "other.png", "note.txt"):
+            with open(os.path.join(folder, rel), "wb") as f:
+                f.write(b"x" * 10)
+        r = images.check_folder(folder, rows)
+        self.assertEqual(r["found"], 2)                    # i.jpg, a.jpg (אותיות שונות)
+        self.assertEqual([m[0] for m in r["missing"]], ["e1.JPG"])
+        self.assertEqual(r["case_only_matches"], 1)
+        self.assertEqual(r["extra_not_in_manifest"], 2)
+        self.assertEqual(r["non_image_ext"], {".txt": 1})
+        self.assertIn("חסרים", images.format_check(r))
+
+
 if __name__ == "__main__":
     unittest.main()
