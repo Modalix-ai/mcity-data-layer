@@ -43,8 +43,8 @@ python -m mcimport run --db /path/old.db --out /path/OUTSIDE_REPO/out --as-of 20
 |---|---|---|
 | `cutoff_year` | `2015` | כתבות מלפני השנה מוסרות (2015 נכללת) |
 | `pre_cutoff` | `exclude` | `hold` מחזיק במקום להסיר |
-| `marketing_agency` | `exclude` | תוכן שיווקי בלי שם מומחה או חברה (קידום קישורים של סוכנויות) |
-| `marketing_expert` | `include` | תוכן שיווקי בשם מומחה או חברה, נחתם על שמם |
+| `marketing_agency` | `exclude` | תוכן שיווקי **בלי קרדיט** (סוכנויות קידום קישורים, או "תוכן שיווקי" בלי שם) |
+| `marketing_expert` | `include` | תוכן שיווקי **עם קרדיט** של מומחה (מקושר) או כותב בשם מומחה/חברה; נחתם על שמם |
 | `forum` | `exclude` | שאלות שפורסמו ולא הומרו לכתבה |
 | `inactive_experts`, `expired_experts`, `realestate_experts` | `hold` | טרם הוכרע |
 | `shared_email` | `blank` | `keep_first_active`. הלקוח יחזיר רשימה מתוקנת |

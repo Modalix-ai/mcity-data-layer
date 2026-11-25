@@ -222,8 +222,12 @@ def classify_writer(name):
 
 
 def marketing_kind(name):
-    """agency = קידום קישורים של סוכנות. expert = כתבה בשם מומחה משלם ('<שם> - תוכן שיווקי')."""
-    return "agency" if AGENCY_WRITER_RE.search(norm_name(name)) else "expert"
+    """agency = קידום קישורים של סוכנות, או 'תוכן שיווקי' בלי שם (אין קרדיט). expert = כתבה בשם מומחה או חברה ('<שם> - תוכן שיווקי')."""
+    n = norm_name(name)
+    if AGENCY_WRITER_RE.search(n):
+        return "agency"
+    base = _MKT_SUFFIX_RE.sub("", n).strip(" -–")
+    return "expert" if len(base) >= 4 else "agency"     # 'תוכן שיווקי' בלבד = אין קרדיט
 
 
 def build_staff_and_writers(db, policy, experts_by_id=None):

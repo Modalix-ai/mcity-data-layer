@@ -301,7 +301,7 @@ class EndToEndTest(unittest.TestCase):
         m1, rep = self._run(out)
         m2, _ = self._run(out)
         self.assertEqual(m1["sha256"], m2["sha256"])
-        self.assertEqual(m1["counts"]["articles.jsonl"], 17)   # 20 פחות 1 לפני החתך ופחות 2 שיווק סוכנות
+        self.assertEqual(m1["counts"]["articles.jsonl"], 18)   # 22 פחות 1 לפני החתך ופחות 3 שיווק בלי קרדיט
         for n in ("users.jsonl", "articles.jsonl", "forum.jsonl", "sections.jsonl", "report.md", "manifest.json"):
             self.assertTrue(os.path.exists(os.path.join(out, n)), n)
         self.assertIn("דוח ייבוא", rep)
@@ -334,7 +334,10 @@ class ClientDecisionsTest(unittest.TestCase):
         self.assertEqual(st["excluded_before_cutoff"], 1)
         self.assertNotIn(5, a)                        # שיווק סוכנות (buypost): מוסר
         self.assertNotIn(6, a)                        # שיווק לפי מדור: מוסר
-        self.assertEqual(st["excluded_marketing_agency"], 2)
+        self.assertEqual(st["excluded_marketing_agency"], 3)   # 5, 6 ו-24 (בלי קרדיט)
+        self.assertNotIn(24, a)
+        self.assertIn(23, a)                          # מדור שיווקי אבל מומחה בקרדיט: נשארת
+        self.assertEqual(a[23]["marketing_kind"], "expert")
         self.assertIn(22, a)                          # בשם מומחה: נשארת, בלי hold, ועל שמו
         self.assertEqual((a[22]["hold"], a[22]["author"]), ([], "expert:1"))
         self.assertIn(1, a)

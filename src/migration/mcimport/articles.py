@@ -111,10 +111,12 @@ def build_articles(db, domains_map, sec_cls, secs_by_id, experts_by_id, writer_i
             hold.append("author_expert_held")
         w_mkt = w_kind.startswith("marketing_")
         marketing = marketing_sec or w_mkt
-        # כתבה במדור שיווקי או של סוכנות = agency. כתבה בשם מומחה משלם = expert (אלא אם גם המדור שיווקי)
+        # כתבה שיווקית עם קרדיט של מומחה או חברה = expert (נשארת). בלי קרדיט = agency (מוסרת)
         mkt_kind = None
         if marketing:
-            mkt_kind = "expert" if (w_kind == "marketing_expert" and not marketing_sec) else "agency"
+            # קרדיט (הלקוח, 24.11): שיווקי עם מומחה או חברה בקרדיט נשאר, בלי קרדיט מוסר. קרדיט = מומחה מקושר, או כותב בשם מומחה/חברה
+            credited = author_src in ("article_expert", "section_expert") or w_kind == "marketing_expert"
+            mkt_kind = "expert" if credited else "agency"
             act = policy.marketing_agency if mkt_kind == "agency" else policy.marketing_expert
             if act == "exclude":
                 stats["excluded_marketing_" + mkt_kind] += 1
