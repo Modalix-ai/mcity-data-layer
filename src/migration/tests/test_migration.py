@@ -366,6 +366,15 @@ class ExpertRecordClassesTest(unittest.TestCase):
         self.assertTrue(all(a["expert_id"] is None for a in q1["answers"]))
 
 
+class NoPendingStatusTest(unittest.TestCase):
+    """החלטה 92: תהליך אישור הכתבות שולח מייל על כל מעבר ל-pending, ולכן היבוא כותב רק publish או draft."""
+
+    def test_statuses_are_publish_or_draft_only(self):
+        _, _, a, *_ = run_all(Policy(cutoff_year=None))
+        self.assertTrue(a)
+        self.assertLessEqual({x["status"] for x in a.values()}, {"publish", "draft"})
+
+
 class SubAreaRegionTest(unittest.TestCase):
     """הלקוח (24.11, שאלה 11): כתבות תת-אזור עוברות לאזור הנקוב. כרמיאל לערי הצפון."""
 
