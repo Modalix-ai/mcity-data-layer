@@ -119,3 +119,17 @@
 - ~~אישור ACF Pro או חינמי~~: אושר חינמי. גישת אדמין לאתר הקיים ודאמפ התבקשו מהמפתח.
 - בדיקות אופציונליות: תנאי תצוגה בשלוש תבניות (כותרת חיפה, ארכיון עיר אדום, עמוד מומחה), ו"Collect Submissions" בטפסי Elementor.
 - אישור מהמעצב אם מותר לחבר את רישיון Elementor לעותק שלנו.
+
+## 6. סביבת העותק ותוספים (נקרא ב-Site Health ובמסך התוספים, 2026-11-25, קריאה בלבד)
+
+**שרת:** וורדפרס 7.1.5, PHP 8.5.13 (php-fpm), nginx 1.24, **MariaDB 10.11.14** (לא MySQL), קידוד `utf8mb4`, איסוף `utf8mb4_unicode_520_ci`, קידומת טבלאות `rca_`. זיכרון PHP 256M, **זמן ריצה 30 שניות**, העלאה עד 64M, Imagick 3.8.1 (ImageMagick 6.9.12, תומך WebP ו-AVIF) ו-GD. הערת אחסון: מטמון Opcode מלא (247MB מתוך 247MB, פגיעות 83%).
+**נפחים בעותק:** מסד 38.55MB, העלאות 16.9MB, תוספים 277MB. **7 משתמשים בלבד**, אין תוכן מהאתר הישן.
+**ערכת נושא:** `hello-theme-child-master` 2.0.0 מעל `hello-elementor` 3.5.1.
+**תוספים פעילים (21):** ACF 6.8.12, Elementor 4.4.2, Elementor Pro 4.4.0, Yoast SEO 28.9, **Redirection 5.10.1**, **File Manager Advanced 6.0.0**, **Novamira 1.12.16** ("שרת MCP שנותן לסוכני AI גישה מלאה להרצת PHP ולמערכת הקבצים, לפיתוח ושלבים בלבד"), UpdraftPlus, All-In-One Security, Speed Optimizer, Burst Statistics, Classic Editor, Disable Comments, Antispam Bee, One User Avatar, Safe SVG, Simple Custom Post Order, Yoast Duplicate Post, Advanced Database Cleaner, ושני תוספים של המעצב (למטה). לא פעילים: Akismet, Simple CAPTCHA with Cloudflare Turnstile, WP-Optimize.
+
+**התוספים של המעצב (M.MEDIA):**
+- `mcity-tools` (מסך: כלים ← MCITY כלים, שלושה חלקים פעילים): צבע לשורות הערים במסכי "מדורים" ו"קטגוריות אינדקס"; "מזהה הקטגוריה" (`mc_slug`) מתמלא אוטומטית בקטגוריית אינדקס חדשה; **"מאפייני פוסט" (עיר + נושא)**: תיבה בעורך הכתבה, סינון ועמודות ברשימת הפוסטים. הדף אומר שכיבוי חלק לא מוחק "ערים, קטגוריות וסימונים", כלומר הם נשמרים בקטגוריות. **לא אומת:** האם התיבה כותבת קטגוריות בלבד או גם meta.
+- `mcity-expert-answers`: שאלה בכתבה של מומחה ← מייל למומחה עם קישור אישי (14 יום, חד-פעמי) ← המומחה עונה בלי סיסמה ← התשובה ממתינה לאישור מנהל. **מבוסס על אימייל המומחה** (ראו החלטה 96).
+
+**מה לא נקרא:** הרחבות PHP (לא מופיעות ב-Site Health), `innodb_ft_min_token_size`, מנוע הטבלאות, ו-FULLTEXT. נדרשת שאילתה על המסד (לא קריאה בלבד) או הרצת קוד.
+
