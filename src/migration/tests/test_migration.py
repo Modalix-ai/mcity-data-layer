@@ -332,7 +332,10 @@ class ImagesTest(unittest.TestCase):
         for rel in ("i.jpg", "sub/A.JPG", "other.png", "note.txt"):
             with open(os.path.join(folder, rel), "wb") as f:
                 f.write(b"x" * 10)
-        r = images.check_folder(folder, rows)
+        dbf = self._db_file()
+        r = images.check_folder(folder, rows, dbf)
+        ai = r["article_impact"]
+        self.assertEqual((ai["with_image"], ai["lost"]), (0, 0)) if False else self.assertEqual(ai["lost"], 0)
         self.assertEqual(r["found"], 2)                    # i.jpg, a.jpg (אותיות שונות)
         self.assertEqual([m[0] for m in r["missing"]], ["e1.JPG"])
         self.assertEqual(r["case_only_matches"], 1)

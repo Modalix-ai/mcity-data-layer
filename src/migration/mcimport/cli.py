@@ -110,6 +110,7 @@ def main(argv=None):
     c.add_argument("--folder", required=True)
     c.add_argument("--manifest", required=True)
     c.add_argument("--report")
+    c.add_argument("--db", help="אופציונלי: מחשב כמה כתבות איבדו תמונה ראשית, לפי שנה")
     a = ap.parse_args(argv)
     if a.cmd == "images-manifest":
         from . import images
@@ -119,7 +120,7 @@ def main(argv=None):
         return 0
     if a.cmd == "images-check":
         from . import images
-        text = images.format_check(images.check_folder(a.folder, images.read_manifest(a.manifest)))
+        text = images.format_check(images.check_folder(a.folder, images.read_manifest(a.manifest), a.db))
         if a.report:
             with open(a.report, "w", encoding="utf-8") as f:
                 f.write(text)

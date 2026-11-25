@@ -45,7 +45,7 @@ def read_manifest(path):
         return [(r["file"], r["sources"], int(r["uses"])) for r in csv.DictReader(f)]
 
 
-def check_folder(folder, manifest):
+def check_folder(folder, manifest, db_path=None):
     """השוואת תיקייה למניפסט. הסריקה רקורסיבית, והתאמה לפי שם קובץ (גם בלי רגישות לאותיות)."""
     index = defaultdict(list)           # שם באותיות קטנות -> [נתיבים]
     total_bytes, n_files, zero, non_img = 0, 0, [], Counter()
@@ -82,7 +82,11 @@ def check_folder(folder, manifest):
             for s in sources.split("+"):
                 by_source[s][1] += 1
     extra = [n for n in index if n not in expected]
+    impact = None
+    if db_path:
+        impact = _article_impact(db_path, set(index))
     return {
+        "article_impact": impact,
         "files_in_folder": n_files, "bytes": total_bytes, "expected": len(manifest), "found": found,
         "missing": missing, "case_only_matches": case_only,
         "duplicates_by_name": sum(1 for v in index.values() if len(v) > 1),
@@ -90,6 +94,25 @@ def check_folder(folder, manifest):
         "by_source": {k: {"expected": v[0], "missing": v[1]} for k, v in by_source.items()},
         "bytes_by_ext": dict(ext_bytes.most_common(8)),
     }
+
+
+def _article_impact(db_path, present):
+    """כמה כתבות איבדו את התמונה הראשית (הקובץ לא בתיקייה), לפי שנת יצירה ולפי סטטוס."""
+    db = sqlite3.connect("file:%s?mode=ro" % db_path, uri=True)
+    total, lost, by_year, lost_year = 0, 0, Counter(), Counter()
+    for img, created, active in db.execute("select image,created,active from rt_articles"):
+        img = os.path.basename((img or "").strip()).lower()
+        if not img:
+            continue
+        total += 1
+        year = (created or "")[:4]
+        by_year[year] += 1
+        if img not in present:
+            lost += 1
+            lost_year[year] += 1
+    db.close()
+    return {"with_image": total, "lost": lost,
+            "by_year": {y: [by_year[y], lost_year[y]] for y in sorted(by_year)}}
 
 
 def format_check(r):
@@ -102,6 +125,13 @@ def format_check(r):
          "## לפי מקור", "| מקור | צפויים | חסרים |", "|---|---|---|"]
     for k, v in sorted(r["by_source"].items()):
         L.append("| %s | {:,} | {:,} |".format(v["expected"], v["missing"]) % k)
+    ai = r.get("article_impact")
+    if ai:
+        L += ["", "## כתבות שאיבדו את התמונה הראשית",
+              "מתוך {:,} כתבות עם תמונה ראשית בדאמפ, בתיקייה חסרה התמונה של {:,}.".format(ai["with_image"], ai["lost"]),
+              "| שנה | כתבות עם תמונה | חסרה תמונה |", "|---|---|---|"]
+        for y, (t, l) in ai["by_year"].items():
+            L.append("| %s | {:,} | {:,} |".format(t, l) % y)
     if r["non_image_ext"]:
         L += ["", "## קבצים שאינם תמונה", ", ".join("%s: %d" % kv for kv in r["non_image_ext"].items())]
     if r["missing"]:

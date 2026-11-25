@@ -63,8 +63,10 @@ MC_OLD_DB=/path/old.db python -m unittest discover -s tests   # כולל בדי�
 
 ```bash
 python -m mcimport images-manifest --db old.db --out images_manifest.csv       # רשימת הקבצים הצפויה (שמות בלבד)
-python -m mcimport images-check --folder D:\\old_images --manifest images_manifest.csv --report images_report.md
+python -m mcimport images-check --folder D:\\old_images --manifest images_manifest.csv --report images_report.md --db old.db
 ```
+
+`--db` (אופציונלי) מוסיף לדוח כמה כתבות איבדו תמונה ראשית, לפי שנה. חשוב כי הלקוח ניקה תמונות באתר הישן אחרי שהדאמפ נלקח, ולכן "חסר" אינו בהכרח שגיאה: הרשימה היא הגבול העליון.
 
 הבדיקה לא קוראת ולא ממירה תמונות, רק סורקת שמות וגדלים (תיקייה של 10GB בשניות). מדווחת: כמה נמצאו וכמה חסרים לפי מקור (ראשית בכתבה, בתוך תוכן, מומחה, פורום), קבצים שאינם תמונה, קבצים כפולים בתת-תיקיות, ואפס בייט. ההמרה (גדלים ופורמט) והעלאה לאתר ממתינות להגדרות המעצב.
 
