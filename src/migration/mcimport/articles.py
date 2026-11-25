@@ -95,12 +95,16 @@ def build_articles(db, domains_map, sec_cls, secs_by_id, experts_by_id, writer_i
         wid = str(a["writer"]).strip()
         w_key, w_kind = writer_index.get(wid, ("staff:unknown", "deleted"))
         author_key, author_src = w_key, "writer"
-        if a["forum_expert_id"] and a["forum_expert_id"] in experts_by_id:
+        if a["forum_expert_id"] and experts_by_id.get(a["forum_expert_id"], {}).get("removed"):
+            flags.append("author_record_removed")       # חשבון פנימי או בדיקה שהוסר: הכתבה נחתמת על הכותב שלה
+        elif a["forum_expert_id"] and a["forum_expert_id"] in experts_by_id:
             author_key, author_src = "expert:%d" % a["forum_expert_id"], "article_expert"
         elif a["forum_expert_id"]:
             flags.append("article_expert_missing")
         if author_src == "writer" and sec_expert:
-            if sec_expert in experts_by_id and "not_an_expert" in experts_by_id[sec_expert]["hold"]:
+            if sec_expert in experts_by_id and experts_by_id[sec_expert].get("removed"):
+                flags.append("section_points_to_removed")
+            elif sec_expert in experts_by_id and "not_an_expert" in experts_by_id[sec_expert]["hold"]:
                 # מדור שמצביע לרשומה פנימית (למשל 'מעגל mcity') הוא טור של כותב, לא של מומחה
                 flags.append("section_points_to_non_expert")
             elif sec_expert in experts_by_id:

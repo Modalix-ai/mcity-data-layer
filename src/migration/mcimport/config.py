@@ -25,6 +25,8 @@ class Policy:
     marketing_expert: str = "include"    # exclude | hold | include   (הלקוח: עם שם מומחה או חברה נשאר) (כתבות בשם מומחה משלם, "<שם> - תוכן שיווקי", ~2,700, רובן שאלות ותשובות)
     expired_experts: str = "include"     # hold | include   (הלקוח, 24.11: נשארים, מטעמים משפטיים. הלקוח יסיר ידנית אם ירצה)   (מנוי שפג: מיובא כלא פעיל רק אם include)
     inactive_experts: str = "include"    # hold | include   (הלקוח, 24.11: נשארים, מטעמים משפטיים)   (מומחים לא פעילים)
+    circles: str = "include"             # exclude | hold | include   (הלקוח, 24.11: מעגלי נטוורקינג נשארים: לפי אזור, עיר ותחום)
+    removed_records: str = "exclude"     # exclude | hold   (הלקוח, 24.11: רשומות בדיקה וחשבונות פנימיים מוסרים, וגם master - הבית של המתווכים)
     realestate_experts: str = "hold"     # hold | include
     shared_email: str = "blank"          # blank | keep_first_active
     section_exclusion: str = "hold"      # hold | include  (כתבות שכל המדורים שלהן נדל"ן/בחירות/בדיקה)
@@ -56,6 +58,20 @@ def load_domains(path=None):
     with open(path, encoding="utf-8") as f:
         raw = json.load(f)
     return {int(k): v for k, v in raw.items() if not k.startswith("_")}
+
+
+def load_expert_classes(path=None):
+    """סיווג ידני של רשומות מומחה (מעגלים נשארים, פנימיות ובדיקה מוסרות). id -> שורה."""
+    import csv
+    path = path or os.path.join(MAPPINGS_DIR, "expert_records.csv")
+    out = {}
+    if not os.path.exists(path):
+        return out
+    with open(path, encoding="utf-8", newline="") as f:
+        for row in csv.DictReader(f):
+            if row.get("id"):
+                out[int(row["id"])] = row
+    return out
 
 
 def load_overrides(path=None):

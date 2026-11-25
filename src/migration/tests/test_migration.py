@@ -27,11 +27,11 @@ def hold_policy(**kw):
     return Policy(**{**HOLD, **kw})
 
 
-def run_all(policy=None, **kw):
+def run_all(policy=None, classes=None, **kw):
     db = fixture.build()
     p = policy or hold_policy()
     dm = load_domains()
-    experts, st_u = build_experts(db, dm, p, AS_OF)
+    experts, st_u = build_experts(db, dm, p, AS_OF, classes=classes)
     ex = {r["legacy_id"]: r for r in experts}
     _, widx, st_w, wd = build_staff_and_writers(db, p, ex)
     secs, cl = load_sections(db)
@@ -322,6 +322,48 @@ class EndToEndTest(unittest.TestCase):
         self.assertEqual(m["counts"]["forum.jsonl"], 7114)
         self.assertEqual(m["counts"]["sections.jsonl"], 255)
         self.assertEqual(m["counts"]["articles.jsonl"] + 214, 38534)
+
+
+class ExpertRecordClassesTest(unittest.TestCase):
+    """תשובות הלקוח על גיליון 2 (24.11): מעגלים נשארים, פנימיות ובדיקה מוסרים."""
+
+    def test_default_mapping_file(self):
+        from mcimport.config import load_expert_classes
+        c = load_expert_classes()
+        self.assertEqual(sum(1 for r in c.values() if r["class"] == "circle"), 24)
+        self.assertEqual(sum(1 for r in c.values() if r["class"] == "internal"), 12)
+        self.assertEqual(sum(1 for r in c.values() if r["class"] == "test"), 3)
+        self.assertEqual(c[146]["class"], "entity_removed")            # master - הבית של המתווכים
+
+    def test_circle_kept_and_not_held(self):
+        _, ex, _, _, _, _, st_u, *_ = run_all(Policy(cutoff_year=None), classes={6: {"class": "circle"}})
+        self.assertEqual((ex[6]["kind"], ex[6]["hold"], "circle" in ex[6]["flags"]), ("circle", [], True))
+        self.assertEqual(st_u["circles"], 1)
+        _, ex, *_ = run_all(Policy(cutoff_year=None, circles="hold"), classes={6: {"class": "circle"}})
+        self.assertEqual(ex[6]["hold"], ["circle_pending"])
+
+    def test_removed_records_not_written_and_articles_fall_back_to_writer(self):
+        _, ex, a, st, _, _, st_u, *_ = run_all(Policy(cutoff_year=None), classes={1: {"class": "internal"}, 7: {"class": "entity_removed"}})
+        self.assertTrue(ex[1]["removed"] and ex[7]["removed"])
+        self.assertEqual(st_u["removed_internal"], 1)
+        self.assertEqual(st_u["removed_entity_removed"], 1)
+        self.assertEqual(a[4]["author"], "writer:30")                    # forum_expert_id בכתבה
+        self.assertIn("author_record_removed", a[4]["flags"])
+        self.assertEqual(a[3]["author"], "writer:30")                    # מדור מומחה
+        self.assertIn("section_points_to_removed", a[3]["flags"])
+        self.assertNotIn("author_expert_held", a[4]["hold"])
+
+    def test_removed_records_policy_hold_and_cli_output(self):
+        _, ex, *_ = run_all(Policy(cutoff_year=None, removed_records="hold"), classes={4: {"class": "test"}})
+        self.assertEqual(ex[4]["hold"], ["record_removed"])
+        self.assertFalse(ex[4].get("removed"))
+
+    def test_forum_answers_of_removed_expert_lose_attribution(self):
+        db, ex, *_ = run_all(Policy(cutoff_year=None), classes={1: {"class": "internal"}})
+        recs, st = build_forum(db, ex, set(), Policy())
+        q1 = next(r for r in recs if r["legacy_id"] == 1)
+        self.assertIsNone(q1["expert_id"])
+        self.assertTrue(all(a["expert_id"] is None for a in q1["answers"]))
 
 
 class ClientDecisionsTest(unittest.TestCase):

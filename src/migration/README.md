@@ -45,6 +45,8 @@ python -m mcimport run --db /path/old.db --out /path/OUTSIDE_REPO/out --as-of 20
 | `pre_cutoff` | `exclude` | `hold` מחזיק במקום להסיר |
 | `marketing_agency` | `exclude` | תוכן שיווקי **בלי קרדיט** ("תוכן שיווקי" בלי שם, וכותבים שלא ברשימת הסוכנויות שנשארות): 124 כתבות |
 | `marketing_agency_kept` | `include` | 6 סוכנויות קידום קישורים שהלקוח אישר להשאיר (buypost, Best Links, אופיר כתבות תדמית, Mega Links, לינקשייק, Seo Rush): 5,421 כתבות, חתומות על חשבון הצוות "תוכן שיווקי" |
+| `circles` | `include` | מעגלי נטוורקינג (24 רשומות במיפוי): נשארים, `kind=circle` בקובץ המשתמשים |
+| `removed_records` | `exclude` | חשבונות פנימיים, רשומות בדיקה ו-master: לא נכתבים. הכתבות שלהם נחתמות על הכותב |
 | `marketing_expert` | `include` | תוכן שיווקי **עם קרדיט** של מומחה (מקושר) או כותב בשם מומחה/חברה; נחתם על שמם |
 | `forum` | `exclude` | שאלות שפורסמו ולא הומרו לכתבה |
 | `inactive_experts`, `expired_experts` | `include` | נשארים (הלקוח, מטעמים משפטיים), מוסתרים מהרשימה ולא מהכתבות |
@@ -83,3 +85,8 @@ python -m mcimport images-check --folder D:\\old_images --manifest images_manife
 - התאמת מדור ישן ל-term בטקסונומיה `section` (נעשית בטוען)
 - סיסמאות ושליחת מיילים: אין. הטוען ייצור סיסמה אקראית ויכבה מיילי ברכה
 - `data.city` של מומחה הוא מזהה מספרי; ממתין לטבלת הערים מ-SPD (נשמר ב-`address_fallback_city_id`)
+
+
+## סיווג ידני של רשומות מומחה
+
+`mappings/expert_records.csv` מסווג רשומות מומחה לפי מזהה: `circle` (נשאר), `internal`, `test`, `entity_removed` (מוסרים). רשומה בתחומי 92/99/100 שלא במיפוי נשארת מוחזקת (`not_an_expert`) עד החלטה. כל שינוי בהחלטת הלקוח הוא שורה בקובץ הזה, בלי שינוי קוד.

@@ -72,7 +72,7 @@ def run(db_path, out_dir, as_of=None, limit=None, policy=None, only=None, overri
     db.close()
     files = {}
     if "users" in only:
-        files["users.jsonl"] = experts + staff_writers
+        files["users.jsonl"] = [r for r in experts if not r.get("removed")] + staff_writers
     if "articles" in only:
         files["articles.jsonl"] = arts
     if "forum" in only:

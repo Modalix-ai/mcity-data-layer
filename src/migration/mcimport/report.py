@@ -83,6 +83,8 @@ def build_report(policy, as_of, sec_cls, secs_by_id, sec_article_counts, stat_us
         ("סה\"כ", u["experts"]), ("מוכנים (בלי hold)", u["ready"]),
         ("לא פעילים", u["hold_inactive_expert"]), ("מנוי שפג", u["hold_expired_subscription"]),
         ("לא מומחים (תחום 92/99/100)", u["hold_not_an_expert"]), ("נדל\"ן", u["hold_realestate_expert"]),
+        ("מעגלי נטוורקינג (נשארים)", u["circles"]), ("הוסרו: חשבונות פנימיים", u["removed_internal"]),
+        ("הוסרו: רשומות בדיקה", u["removed_test"]), ("הוסרו: master (הבית של המתווכים)", u["removed_entity_removed"]),
         ("אימייל ייחודי", u["email_unique"]), ("אימייל משותף (מרוקן)", u["email_shared"]),
         ("אימייל חסר או פגום", u["email_missing"] + u["email_invalid"]),
     ], ["נושא", "כמות"]))

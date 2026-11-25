@@ -7,7 +7,7 @@ import html
 import re
 from collections import Counter, defaultdict
 
-from .config import RESERVED_SLUGS
+from .config import RESERVED_SLUGS, load_expert_classes
 from .phpser import as_list, decode_field
 from .textutil import norm_name, slugify, strip_tags
 
@@ -55,8 +55,9 @@ def _ymd(date_text):
     return "".join(m.groups()) if m else None
 
 
-def build_experts(db, domains_map, policy, as_of):
-    """as_of: 'YYYYMMDD'. מחזיר (רשומות, סטטיסטיקה)."""
+def build_experts(db, domains_map, policy, as_of, classes=None):
+    """as_of: 'YYYYMMDD'. classes: סיווג ידני לפי id (ברירת מחדל: mappings/expert_records.csv). מחזיר (רשומות, סטטיסטיקה)."""
+    classes = load_expert_classes() if classes is None else classes
     subf = {r["id"]: r for r in _all(db, "select id,name,field from rt_forum_subfields")}
     fields = {r["id"]: r for r in _all(db, "select id,name from rt_forum_fields")}
     expiry = {r["forum_expert"]: _ymd(r["expiry"]) for r in _all(db, "select forum_expert,expiry from rt_forum_experts_expiry_date")}
@@ -91,9 +92,23 @@ def build_experts(db, domains_map, policy, as_of):
             f = fields.get(sf["field"], {})
             cats.append({"subfield_id": s, "subfield": norm_name(sf["name"]), "field_id": sf["field"], "field": norm_name(f.get("name", ""))})
         parent = cats[0]["field_id"] if cats else None
-        if parent in NON_EXPERT_FIELDS:
+        rclass = (classes.get(rid) or {}).get("class")
+        removed = False
+        if rclass in ("internal", "test", "entity_removed"):
+            # הלקוח (24.11): בדיקה, חשבונות פנימיים ו-master מוסרים. כתבות שלהם נחתמות על הכותב שלהן
+            removed = True
+            flags.append("record_" + rclass)
+            if policy.removed_records == "hold":
+                hold.append("record_removed")
+        elif rclass == "circle":
+            flags.append("circle")
+            if policy.circles == "hold":
+                hold.append("circle_pending")
+            elif policy.circles == "exclude":
+                removed = True
+        elif parent in NON_EXPERT_FIELDS:
             hold.append("not_an_expert")
-        if parent in REALESTATE_FIELDS and policy.realestate_experts == "hold":
+        if parent in REALESTATE_FIELDS and policy.realestate_experts == "hold" and not rclass:
             hold.append("realestate_expert")
         if primary is None:
             flags.append("no_field")
@@ -159,7 +174,7 @@ def build_experts(db, domains_map, policy, as_of):
         address = (d.get("address") or "").strip()
         rec = {
             "key": "expert:%d" % rid,
-            "kind": "expert",
+            "kind": "circle" if rclass == "circle" else "expert",
             "legacy_id": rid,
             "role": "author",
             "login": "mc_expert_%d" % rid,
@@ -187,8 +202,16 @@ def build_experts(db, domains_map, policy, as_of):
             "hold": hold,
             "flags": flags,
         }
+        if removed and not (rclass in ("internal", "test", "entity_removed") and policy.removed_records == "hold"):
+            rec["removed"] = True
+            stats["removed_" + (rclass or "other")] += 1
+            stats["removed_records"] += 1
+        if rclass == "circle":
+            stats["circles"] += 1
         recs.append(rec)
         nick_pairs.append((rid, rec["display_name"]))
+        if rec.get("removed"):
+            continue
         stats["experts"] += 1
         stats["email_" + email_status] += 1
         for h in hold:
@@ -201,6 +224,8 @@ def build_experts(db, domains_map, policy, as_of):
     # nicename (קבוע לפי מדיניות slug, ייחודי)
     used, reserved = set(), set(RESERVED_SLUGS) | {"mcity-team", "mcity-editor"} | {v["slug"] for v in domains_map.values() if v.get("slug")}
     for rec in recs:
+        if rec.get("removed"):
+            continue
         base = slugify(rec["display_name"], policy.slug_policy, 60)
         s, n = base, 2
         while s in used or s in reserved:

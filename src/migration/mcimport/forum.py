@@ -17,6 +17,8 @@ def _rows(db, sql):
 def build_forum(db, experts_by_id, article_legacy_ids, policy):
     """מחזיר (רשומות, סטטיסטיקה). רשומה לכל שאלה; התשובות מקוננות בתוכה."""
     stats = Counter()
+    # רשומות שהוסרו (חשבונות פנימיים ובדיקה) נחשבות כלא קיימות
+    experts_by_id = {k: v for k, v in experts_by_id.items() if not v.get("removed")}
     questions = _rows(db, "select id,user_name,title,content,expert,created,modified,active from rt_forum_questions order by id")
     answers = defaultdict(list)
     for a in _rows(db, "select id,question,expert,content,scale,created,modified,active from rt_forum_answers order by id"):
