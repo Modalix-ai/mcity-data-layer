@@ -14,6 +14,7 @@ from collections import Counter
 
 from . import __version__
 from .articles import build_articles, load_sections
+from .config import load_removed_sections
 from .config import Policy, load_domains, load_overrides
 from .forum import build_forum
 from .report import build_report
@@ -63,6 +64,8 @@ def run(db_path, out_dir, as_of=None, limit=None, policy=None, only=None, overri
     sec_rows = []
     for sid, c in sorted(sec_cls.items()):
         row = dict(c, id=sid, name=secs_by_id[sid]["name"].strip(), articles=sec_counts.get(sid, 0))
+        if policy.removed_sections == "exclude" and sid in load_removed_sections():
+            row["removed"] = True    # הלקוח (25.11): המדור והכתבות שלו לא עוברים
         if c["kind"] == "unreviewed":
             n = norm_name(row["name"])
             # רמז בלבד: התאמת שם למומחה. לא מופעל אוטומטית כי יש שמות כפולים.

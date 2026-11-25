@@ -321,7 +321,7 @@ class EndToEndTest(unittest.TestCase):
         m, _ = cli.run(db, tempfile.mkdtemp(), as_of=AS_OF, policy=hold_policy())
         self.assertEqual(m["counts"]["forum.jsonl"], 7114)
         self.assertEqual(m["counts"]["sections.jsonl"], 255)
-        self.assertEqual(m["counts"]["articles.jsonl"] + 214, 38534)
+        self.assertEqual(m["counts"]["articles.jsonl"] + 214 + 71, 38534)    # 71 = מדור פלמנקו שהוסר (הלקוח, 25.11)
 
 
 class ExpertRecordClassesTest(unittest.TestCase):
@@ -386,6 +386,27 @@ class SubAreaRegionTest(unittest.TestCase):
         self.assertEqual((a[26]["cities"], a[26]["scope"]), (["petah-tikva"], "city"))  # ראש העין: פתח תקווה, לא ארצית
         self.assertEqual(a[1]["cities"], ["modiin"])                                    # כתבה רגילה לא מושפעת
         self.assertEqual(st["subarea_region_override"], 2)
+
+
+class RemovedSectionsTest(unittest.TestCase):
+    """הלקוח (25.11): המדור פלמנקו (239) והכתבות שלו מוסרים, גם כתבה ששויכה גם למדור אחר. רשומה 619 והמיניסייט נשארים."""
+
+    def test_removed_section_articles_excluded(self):
+        _, _, a, st, *_ = run_all(Policy(cutoff_year=None))
+        self.assertNotIn(27, a)
+        self.assertNotIn(28, a)
+        self.assertEqual(st["excluded_removed_section"], 2)
+        self.assertIn(1, a)                                                           # כתבה רגילה במדור 1 לא מושפעת
+
+    def test_policy_include_keeps_them(self):
+        _, _, a, st, *_ = run_all(Policy(cutoff_year=None, removed_sections="include"))
+        self.assertIn(27, a)
+        self.assertIn(28, a)
+        self.assertEqual(st["excluded_removed_section"], 0)
+
+    def test_default_csv_lists_flamenco(self):
+        from mcimport.config import load_removed_sections
+        self.assertEqual(load_removed_sections(), {239})
 
 
 class ClientDecisionsTest(unittest.TestCase):

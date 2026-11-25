@@ -10,7 +10,7 @@
 import html
 from collections import Counter
 
-from .config import RESERVED_SLUGS
+from .config import RESERVED_SLUGS, load_removed_sections
 from .phpser import as_list, decode_field
 from .sections import SUBAREA_REGION, classify_all
 from .textutil import assign_slugs, clean_content, extract_refs, norm_name, strip_tags, to_gmt
@@ -33,11 +33,12 @@ def _ints(raw):
     return [int(x) for x in as_list(decode_field(raw)[0]) if str(x).isdigit()]
 
 
-def build_articles(db, domains_map, sec_cls, secs_by_id, experts_by_id, writer_index, policy, limit=None, only_ids=None):
+def build_articles(db, domains_map, sec_cls, secs_by_id, experts_by_id, writer_index, policy, limit=None, only_ids=None, removed_sections=None):
     """מחזיר (רשומות, סטטיסטיקה, התנגשויות slug)."""
     stats = Counter()
     recs = []
     city_slugs = {v["slug"] for v in domains_map.values() if v.get("slug")}
+    removed = (load_removed_sections() if removed_sections is None else set(removed_sections)) if policy.removed_sections == "exclude" else set()
     q = "select id,headline,content,writer,sections,domains,image,url,title,description,data,created,modified,active,forum_expert_id from rt_articles order by id"
     cur = db.execute(q)
     cols = [c[0] for c in cur.description]
@@ -54,6 +55,11 @@ def build_articles(db, domains_map, sec_cls, secs_by_id, experts_by_id, writer_i
         year = int(created[:4]) if created[:4].isdigit() else None
         if policy.cutoff_year and year and year < policy.cutoff_year and policy.pre_cutoff == "exclude":
             stats["excluded_before_cutoff"] += 1
+            continue
+
+        # --- מדורים שהלקוח הורה להסיר: הכתבה מוסרת כולה, גם אם שויכה גם למדור אחר ---
+        if removed and removed & set(_ints(a["sections"])):
+            stats["excluded_removed_section"] += 1
             continue
 
         # --- ערים ---

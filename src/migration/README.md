@@ -46,6 +46,7 @@ python -m mcimport run --db /path/old.db --out /path/OUTSIDE_REPO/out --as-of 20
 | `marketing_agency` | `exclude` | תוכן שיווקי **בלי קרדיט** ("תוכן שיווקי" בלי שם, וכותבים שלא ברשימת הסוכנויות שנשארות): 124 כתבות |
 | `marketing_agency_kept` | `include` | 6 סוכנויות קידום קישורים שהלקוח אישר להשאיר (buypost, Best Links, אופיר כתבות תדמית, Mega Links, לינקשייק, Seo Rush): 5,421 כתבות, חתומות על חשבון הצוות "תוכן שיווקי" |
 | `circles` | `include` | מעגלי נטוורקינג (24 רשומות במיפוי): נשארים, `kind=circle` בקובץ המשתמשים |
+| `removed_sections` | `exclude` | מדורים שהלקוח הסיר והכתבות שלהם (`mappings/removed_sections.csv`, כרגע פלמנקו 239) |
 | `removed_records` | `exclude` | חשבונות פנימיים, רשומות בדיקה ו-master: לא נכתבים. הכתבות שלהם נחתמות על הכותב |
 | `marketing_expert` | `include` | תוכן שיווקי **עם קרדיט** של מומחה (מקושר) או כותב בשם מומחה/חברה; נחתם על שמם |
 | `forum` | `exclude` | שאלות שפורסמו ולא הומרו לכתבה |
@@ -90,6 +91,10 @@ python -m mcimport images-check --folder D:\\old_images --manifest images_manife
 ## סיווג ידני של רשומות מומחה
 
 `mappings/expert_records.csv` מסווג רשומות מומחה לפי מזהה: `circle` (נשאר), `internal`, `test`, `entity_removed` (מוסרים). רשומה בתחומי 92/99/100 שלא במיפוי נשארת מוחזקת (`not_an_expert`) עד החלטה. כל שינוי בהחלטת הלקוח הוא שורה בקובץ הזה, בלי שינוי קוד.
+
+## מדורים שהוסרו
+
+`mappings/removed_sections.csv` (id, name, note) מפרט מדורים שהלקוח הורה להסיר. כל כתבה ששויכה למדור כזה מוסרת כולה, גם אם שויכה גם למדור אחר (`excluded_removed_section` בדוח). המדור מסומן `removed` ב-`sections.jsonl`. מדיניות: `removed_sections=exclude|include`. כרגע רק 239 (פלמנקו, 71 כתבות). רשומה 619 ("ארגונים וקבוצות") והמיניסייט שלה נשארים.
 
 ## תת-אזורי חדשות
 

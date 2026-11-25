@@ -27,6 +27,7 @@ class Policy:
     inactive_experts: str = "include"    # hold | include   (הלקוח, 24.11: נשארים, מטעמים משפטיים)   (מומחים לא פעילים)
     circles: str = "include"             # exclude | hold | include   (הלקוח, 24.11: מעגלי נטוורקינג נשארים: לפי אזור, עיר ותחום)
     removed_records: str = "exclude"     # exclude | hold   (הלקוח, 24.11: רשומות בדיקה וחשבונות פנימיים מוסרים, וגם master - הבית של המתווכים)
+    removed_sections: str = "exclude"    # exclude | include   (הלקוח, 25.11: מדורים שהוסרו, והכתבות שלהם, ראו mappings/removed_sections.csv)
     realestate_experts: str = "hold"     # hold | include
     shared_email: str = "blank"          # blank | keep_first_active
     section_exclusion: str = "hold"      # hold | include  (כתבות שכל המדורים שלהן נדל"ן/בחירות/בדיקה)
@@ -72,6 +73,16 @@ def load_expert_classes(path=None):
             if row.get("id"):
                 out[int(row["id"])] = row
     return out
+
+
+def load_removed_sections(path=None):
+    """מדורים שהלקוח הורה להסיר, והכתבות המשויכות אליהם. מחזיר קבוצת מזהי מדור."""
+    import csv
+    path = path or os.path.join(MAPPINGS_DIR, "removed_sections.csv")
+    if not os.path.exists(path):
+        return set()
+    with open(path, encoding="utf-8", newline="") as f:
+        return {int(r["id"]) for r in csv.DictReader(f) if r.get("id")}
 
 
 def load_overrides(path=None):
