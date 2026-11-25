@@ -12,7 +12,7 @@ from collections import Counter
 
 from .config import RESERVED_SLUGS
 from .phpser import as_list, decode_field
-from .sections import classify_all
+from .sections import SUBAREA_REGION, classify_all
 from .textutil import assign_slugs, clean_content, extract_refs, norm_name, strip_tags, to_gmt
 from .users import classify_writer
 
@@ -77,6 +77,14 @@ def build_articles(db, domains_map, sec_cls, secs_by_id, experts_by_id, writer_i
         sec_expert = next((sec_cls[s]["expert_id"] for s in sec_ids if s in sec_cls and sec_cls[s].get("expert_id")), None)
         if any(sec_cls[s].get("sub_area") for s in sec_ids if s in sec_cls):
             flags.append("news_sub_area_merged")
+        sub_regions = sorted({SUBAREA_REGION[s] for s in sec_ids if s in SUBAREA_REGION})
+        if sub_regions:
+            # הלקוח (24.11): כתבת תת-אזור שייכת לאזור של המדור, לא לדומיינים הרחבים שסומנו בכתבה
+            if regional != sub_regions:
+                stats["subarea_region_override"] += 1
+            regional, scope = sub_regions, "city"
+            flags = [f for f in flags if f != "all_regions"]
+            flags.append("region_from_subarea")
         if "unreviewed" in kinds:
             flags.append("section_unreviewed")
         if not sec_ids:

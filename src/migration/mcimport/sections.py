@@ -21,6 +21,14 @@ from .textutil import norm_name
 
 SUBAREA_IDS = {361, 427, 428, 429, 433, 444, 445, 449, 460, 474, 475, 476, 509, 539}
 
+# הלקוח (24.11.2026, שאלה 11): כתבות בתת-אזורי חדשות עוברות לאזור הנקוב, בלי מדור נפרד.
+# כרמיאל והגליל העליון משויך לערי הצפון (ולא לחיפה והעמקים כפי שהיה בדומיין הישן).
+# 361 (חדשות הגליל) ו-539 (יבנה) לא הופיעו בטבלה שהוצגה ללקוח, ולכן נשארים לפי דומיינים של הכתבה.
+SUBAREA_REGION = {
+    427: "sharon", 428: "petah-tikva", 429: "petah-tikva", 433: "north", 444: "north", 445: "north",
+    449: "sharon", 460: "haifa", 474: "north", 475: "north", 476: "north", 509: "rishon",
+}
+
 JUNK_NAMES = {"abc", "וו", "hvuro dkhkh", "מתכנת בודק", "לא שייך למדור"}
 
 MARKETING_EXPLICIT = re.compile(r"תוכן שיווקי|buypost|best link|mega links|seo rush|linkshak|ofir", re.I)

@@ -305,7 +305,7 @@ class EndToEndTest(unittest.TestCase):
         m1, rep = self._run(out)
         m2, _ = self._run(out)
         self.assertEqual(m1["sha256"], m2["sha256"])
-        self.assertEqual(m1["counts"]["articles.jsonl"], 19)   # 22 פחות 1 לפני החתך ופחות 2 שיווק בלי קרדיט (buypost נשאר)
+        self.assertEqual(m1["counts"]["articles.jsonl"], 21)   # 24 פחות 1 לפני החתך ופחות 2 שיווק בלי קרדיט (buypost נשאר)
         for n in ("users.jsonl", "articles.jsonl", "forum.jsonl", "sections.jsonl", "report.md", "manifest.json"):
             self.assertTrue(os.path.exists(os.path.join(out, n)), n)
         self.assertIn("דוח ייבוא", rep)
@@ -364,6 +364,19 @@ class ExpertRecordClassesTest(unittest.TestCase):
         q1 = next(r for r in recs if r["legacy_id"] == 1)
         self.assertIsNone(q1["expert_id"])
         self.assertTrue(all(a["expert_id"] is None for a in q1["answers"]))
+
+
+class SubAreaRegionTest(unittest.TestCase):
+    """הלקוח (24.11, שאלה 11): כתבות תת-אזור עוברות לאזור הנקוב. כרמיאל לערי הצפון."""
+
+    def test_subarea_region(self):
+        _, _, a, st, *_ = run_all(Policy(cutoff_year=None))
+        self.assertEqual((a[25]["cities"], a[25]["scope"]), (["north"], "city"))       # כרמיאל: צפון, גם כשסומנה לכל הערים
+        self.assertNotIn("all_regions", a[25]["flags"])
+        self.assertIn("region_from_subarea", a[25]["flags"])
+        self.assertEqual((a[26]["cities"], a[26]["scope"]), (["petah-tikva"], "city"))  # ראש העין: פתח תקווה, לא ארצית
+        self.assertEqual(a[1]["cities"], ["modiin"])                                    # כתבה רגילה לא מושפעת
+        self.assertEqual(st["subarea_region_override"], 2)
 
 
 class ClientDecisionsTest(unittest.TestCase):
